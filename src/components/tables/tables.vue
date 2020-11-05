@@ -213,6 +213,7 @@ export default {
               this.$emit('on-cancel-edit', params)
             },
             'on-save-edit': (params) => {
+              // eslint-disable-next-line vue/no-mutating-props
               this.value[params.row.initRowIndex][params.column.key] = this.edittingText
               this.$emit('input', this.value)
               this.$emit('on-save-edit', Object.assign(params, { value: this.edittingText }))

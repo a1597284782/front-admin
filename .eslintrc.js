@@ -1,6 +1,6 @@
 module.exports = {
   root: true,
-  'extends': [
+  extends: [
     'plugin:vue/essential',
     '@vue/standard'
   ],
@@ -13,7 +13,7 @@ module.exports = {
       'x-invalid-end-tag': false
     }],
     'no-undef': 'off',
-    'camelcase': 'off'
+    camelcase: 'off'
   },
   parserOptions: {
     parser: 'babel-eslint'
