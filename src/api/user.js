@@ -1,24 +1,11 @@
-import axios from '@/libs/api.request'
-
-export const login = ({ userName, password }) => {
-  const data = {
-    userName,
-    password
-  }
-  return axios.request({
-    url: 'login',
-    data,
-    method: 'post'
-  })
-}
+import axios from '@/libs/request'
+import { getToken } from '@/libs/util'
 
 export const getUserInfo = (token) => {
-  return axios.request({
-    url: 'get_info',
-    params: {
-      token
-    },
-    method: 'get'
+  return axios.get('/public/info', {
+    headers: {
+      Authorization: 'Beaerer ' + getToken()
+    }
   })
 }
 

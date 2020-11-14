@@ -56,6 +56,15 @@
       <slot name="header" slot="header"></slot>
       <slot name="footer" slot="footer"></slot>
       <slot name="loading" slot="loading"></slot>
+      <template slot-scope="{ row, index }" slot="action">
+        <Icon
+          type="md-build"
+          size="22"
+          style="margin-right: 5px"
+          @click.stop="editRow(row, index)"
+        />
+        <Icon type="md-trash" size="22" @click.stop="removeRow(row, index)" />
+      </template>
     </Table>
     <div
       v-if="searchable && searchPlace === 'bottom'"
@@ -296,6 +305,12 @@ export default {
     },
     onExpand (row, status) {
       this.$emit('on-expand', row, status)
+    },
+    editRow (row, index) {
+      this.$emit('on-row-edit', row, index)
+    },
+    removeRow (row, index) {
+      this.$emit('on-row-remove', row, index)
     }
   },
   watch: {
