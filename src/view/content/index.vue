@@ -28,18 +28,21 @@
         />
       </Row>
     </Card>
+    <EdiModel :isShow="showEdit" :item="currentItem" @editEvent="handleEdit" @changeEvent="handleChangeEvent"></EdiModel>
   </div>
 </template>
 
 <script>
 import Tables from '_c/tables'
-import { getList, deletePostById } from '@/api/content'
+import EdiModel from './index/edit'
+import { getList, deletePostById, updatePostById } from '@/api/content'
 import dayjs from 'dayjs'
 
 export default {
   name: 'content_management',
   components: {
-    Tables
+    Tables,
+    EdiModel
   },
   data () {
     return {
@@ -50,6 +53,11 @@ export default {
       // 总条数
       total: 40,
       pageArr: [10, 20, 30, 50, 100],
+      // 控制显示对话框
+      showEdit: false,
+      // 行数据
+      currentItem: {},
+      currentIndex: 0,
       // 表头
       columns: [
         {
@@ -199,9 +207,27 @@ export default {
     }
   },
   methods: {
+    // 确定
+    handleEdit (item) {
+      updatePostById(item).then(res => {
+        if (res.code === 200) {
+          this.tableData.splice(this.currentIndex, 1, item)
+          this.$Message.success(res.msg)
+        }
+      })
+      this.showEdit = false
+    },
+    // 取消
+    handleChangeEvent (value) {
+      this.showEdit = value
+      console.log('🚀 ~ file: index.vue ~ line 215 ~ handleChangeEvent ~ value', value)
+    },
     // 编辑
     handleRowEdit (row, index) {
       console.log('handleRowEdit -> row', row)
+      this.showEdit = true
+      this.currentItem = { ...row }
+      this.currentIndex = index
     },
     // 删除
     handleRowRemove (row, index) {
