@@ -97,6 +97,7 @@ export default {
         addTag(item).then((res) => {
           if (res.code === 200) {
             console.log('添加成功')
+            this.$Message.success(res.msg)
             this.page = 1
             this.limit = 10
             this._getTags()
@@ -106,6 +107,7 @@ export default {
         updateTag(item).then((res) => {
           if (res.code === 200) {
             console.log('更新成功')
+            this.$Message.success(res.msg)
             this.page = 1
             this.limit = 10
             this._getTags()
@@ -138,7 +140,7 @@ export default {
           removeTag(row._id)
             .then((res) => {
               if (res.code === 200) {
-                this.$Message.info('成功删除！')
+                this.$Message.success(res.msg)
                 this.tableData = this.tableData.filter(
                   (item) => item._id !== row._id
                 )

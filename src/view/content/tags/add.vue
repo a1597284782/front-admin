@@ -59,7 +59,6 @@ export default {
   methods: {
     ok () {
       this.$emit('addEvent', this.localItem)
-      this.$Message.info('操作成功！')
     },
     cancel () {
       this.$emit('changeEvent', false)

@@ -2,7 +2,7 @@
   <div>
     <Modal
       v-model="showStats"
-      title="Common Modal dialog box title"
+      title="编辑文章属性"
       @on-ok="ok"
       @on-cancel="cancel"
     >
@@ -142,7 +142,7 @@ export default {
     },
     cancel () {
       this.$emit('changeEvent', false)
-      this.$Message.info('Clicked cancel')
+      this.$Message.info('取消操作')
     }
   }
 }

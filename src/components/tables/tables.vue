@@ -25,6 +25,7 @@
       <Button @click="handleSearch" class="search-btn" type="primary"
         ><Icon type="search" />&nbsp;&nbsp;搜索</Button
       >
+      <slot name="table-header"></slot>
     </div>
     <Table
       ref="tablesMain"

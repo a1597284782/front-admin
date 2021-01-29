@@ -5,6 +5,7 @@ import { getToken } from './util'
 // 白名单
 import PublicConfig from '@/config'
 import errorHandle from './errorHandle'
+import ViewUI from 'view-design'
 
 const CancelToken = axios.CancelToken
 
@@ -69,11 +70,14 @@ class HttpRequest {
     // 添加响应拦截器
     instance.interceptors.response.use(
       res => {
-        // // console.log('res:', res)
+        console.log('res:', res)
         // 对响应数据做点什么
         const key = res.config.url + '&' + res.config.method
         this.removePending(key)
         if (res.status === 200) {
+          if (res.data.code !== 200) {
+            ViewUI.Message.error(res.data.msg || '未知错误！')
+          }
           return Promise.resolve(res.data)
         } else {
           return Promise.reject(res)

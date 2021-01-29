@@ -28,7 +28,12 @@
         />
       </Row>
     </Card>
-    <EdiModel :isShow="showEdit" :item="currentItem" @editEvent="handleEdit" @changeEvent="handleChangeEvent"></EdiModel>
+    <EdiModel
+      :isShow="showEdit"
+      :item="currentItem"
+      @editEvent="handleEdit"
+      @changeEvent="handleChangeEvent"
+    ></EdiModel>
   </div>
 </template>
 
@@ -197,8 +202,9 @@ export default {
         },
         {
           title: '设置',
+          key: 'settings',
           slot: 'action',
-          key: 'right',
+          fixed: 'right',
           minWidth: 160,
           align: 'center'
         }

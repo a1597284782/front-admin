@@ -45,5 +45,6 @@ export default {
   tree_select_page: 'Tree Selector',
   article_management: 'Article Managemen',
   content_management: 'Content Managemen',
-  tags_management: 'Tags Managemen'
+  tags_management: 'Tags Managemen',
+  user_management: 'User Management'
 }
