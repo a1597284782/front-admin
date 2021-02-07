@@ -7,14 +7,18 @@
       @on-cancel="cancel"
       :loading="loading"
     >
-     <Form
+      <Form
         :model="localItem"
         :label-width="80"
         :rules="ruleValidate"
         ref="table"
       >
         <FormItem label="登录名" prop="username">
-          <Input prefix="md-mail" v-model="localItem.username" placeholder="请输入登录名" />
+          <Input
+            prefix="md-mail"
+            v-model="localItem.username"
+            placeholder="请输入登录名"
+          />
         </FormItem>
         <FormItem label="密码" prop="password">
           <Input
@@ -25,7 +29,11 @@
           />
         </FormItem>
         <FormItem label="用户昵称" prop="name">
-          <Input prefix="md-person" v-model="localItem.name" placeholder="请输入用户昵称" />
+          <Input
+            prefix="md-person"
+            v-model="localItem.name"
+            placeholder="请输入用户昵称"
+          />
         </FormItem>
         <FormItem label="手机" prop="mobile">
           <Input v-model="localItem.mobile" placeholder="请输入手机" />
@@ -42,11 +50,15 @@
             <Radio label="1">是</Radio>
           </RadioGroup>
         </FormItem>
-         <FormItem label="用户积分" prop="favs">
+        <FormItem label="用户积分" prop="favs">
           <Input type="number" v-model="localItem.favs" style="width: 120px" />
         </FormItem>
         <FormItem label="所在城市">
-          <Input prefix="md-pin" v-model="localItem.location" placeholder="请输入所在城市" />
+          <Input
+            prefix="md-pin"
+            v-model="localItem.location"
+            placeholder="请输入所在城市"
+          />
         </FormItem>
         <FormItem label="性别">
           <RadioGroup v-model="localItem.gender">
@@ -55,7 +67,11 @@
           </RadioGroup>
         </FormItem>
         <FormItem label="个性签名">
-          <Input type="textarea" v-model="localItem.regmark" placeholder="请输入个性签名" />
+          <Input
+            type="textarea"
+            v-model="localItem.regmark"
+            placeholder="请输入个性签名"
+          />
         </FormItem>
 
         <!-- <FormItem label="标签">
@@ -188,6 +204,9 @@ export default {
           this.loading = false
           this.$emit('changeEvent', false)
           this.$emit('editEvent', this.localItem)
+          setTimeout(() => {
+            this.$refs.table.resetFields()
+          }, 0)
         } else {
           this.loading = false
           this.$nextTick(() => { this.loading = true })

@@ -10,11 +10,13 @@
         :columns="columns"
         @on-row-edit="handleRowEdit"
         @on-row-remove="handleRowRemove"
+        @on-selection-change="handleSelect"
+        @searchEvent="handleSearch"
       >
         <template v-slot:table-header>
           <Button @click="handleAddUser" class="search-btn" type="primary"
-        ><Icon type="md-person-add" />&nbsp;&nbsp;新增用户</Button
-      >
+            ><Icon type="md-person-add" />&nbsp;&nbsp;新增用户</Button
+          >
         </template>
       </tables>
       <Row type="flex" justify="space-between" align="middle">
@@ -23,8 +25,8 @@
             <Icon type="md-download"></Icon>
             导出为Excel文件
           </Button>
-          <Button @click="handleSelectAll(true)">批量全选</Button>
-          <Button @click="handleSelectAll(false)">取消全选</Button>
+          <Button @click="handleDeleteBatch()">批量删除</Button>
+          <Button @click="handleSetBatch()">批量设置</Button>
         </Col>
         <Col
           ><Page
@@ -51,14 +53,20 @@
       @editEvent="handleItemAdd"
       @changeEvent="handleAddChangeEvent"
     ></AddModel>
+    <BatchSet
+      :isShow="showSet"
+      @editEvent="handleItemSet"
+      @changeEvent="handleSetChangeEvent"
+    ></BatchSet>
   </div>
 </template>
 
 <script>
-import { getUserList, updateUserById, deleteUserById, addUser } from '@/api/admin'
+import { getUserList, updateUserById, updateUserBatchById, deleteUserById, addUser } from '@/api/admin'
 import Tables from '_c/tables'
 import EditModel from './edit'
 import AddModel from './add'
+import BatchSet from './batchSet'
 import dayjs from 'dayjs'
 
 export default {
@@ -66,7 +74,8 @@ export default {
   components: {
     Tables,
     EditModel,
-    AddModel
+    AddModel,
+    BatchSet
   },
   data () {
     return {
@@ -87,19 +96,26 @@ export default {
         {
           type: 'selection',
           width: 60,
-          align: 'center'
+          align: 'center',
+          hidden: true
         },
         {
           title: '用户昵称',
           key: 'name',
           align: 'center',
-          minWidth: 140
+          minWidth: 140,
+          search: {
+            type: 'input'
+          }
         },
         {
           title: '登录名',
           key: 'username',
           align: 'center',
-          minWidth: 200
+          minWidth: 200,
+          search: {
+            type: 'input'
+          }
         },
         {
           title: '角色',
@@ -108,12 +124,30 @@ export default {
           minWidth: 160,
           render: (h, params) => {
             return h('div', [h('span', params.row.roles.join(','))])
+          },
+          search: {
+            type: 'select',
+            options: [
+              {
+                key: '超级管理员',
+                value: 'super_admin'
+              },
+              {
+                key: '管理员',
+                value: 'admin'
+              },
+              {
+                key: '普通用户',
+                value: 'user'
+              }
+            ]
           }
         },
         {
           title: '积分',
           key: 'favs',
           align: 'center',
+          hidden: true,
           minWidth: 80
         },
         {
@@ -123,6 +157,23 @@ export default {
           minWidth: 100,
           render: (h, params) => {
             return h('div', [h('span', params.row.status === '0' ? '否' : '是')])
+          },
+          search: {
+            type: 'radio',
+            options: [
+              {
+                key: '全部',
+                value: ''
+              },
+              {
+                key: '否',
+                value: '0'
+              },
+              {
+                key: '是',
+                value: '1'
+              }
+            ]
           }
         },
         {
@@ -132,6 +183,23 @@ export default {
           minWidth: 120,
           render: (h, params) => {
             return h('div', [h('span', params.row.isVip === '0' ? '否' : '是')])
+          },
+          search: {
+            type: 'radio',
+            options: [
+              {
+                key: '全部',
+                value: ''
+              },
+              {
+                key: '否',
+                value: '0'
+              },
+              {
+                key: '是',
+                value: '1'
+              }
+            ]
           }
         },
         {
@@ -143,6 +211,9 @@ export default {
             return h('div', [
               h('span', dayjs(params.row.created).format('YYYY-MM-DD HH:mm:ss'))
             ])
+          },
+          search: {
+            type: 'date'
           }
         },
         {
@@ -150,25 +221,44 @@ export default {
           key: 'settings',
           slot: 'action',
           fixed: 'right',
+          hidden: true,
           minWidth: 160,
           align: 'center'
         }
       ],
       tableData: [],
-      showAdd: false
+      showAdd: false,
+      // 批量
+      showSet: false,
+      selection: [],
+      option: {}
     }
   },
   mounted () {
     this._getList()
   },
   methods: {
+    handleSearch (value) {
+      // 判断是否有新的查询内容的传递，把分页数据归0
+      if (
+        (typeof this.option.search !== 'undefined' &&
+          value.search !== this.option.search) ||
+        this.option === {}
+      ) {
+        this.page = 1 // 从1开始
+      }
+      this.option = value
+      this._getList()
+    },
     // 页码改变的回调，返回改变后的页码
     onPageChange (page) {
       this.page = page
+      this._getList()
     },
     // 切换每页条数时的回调，返回切换后的每页条数
     onPageSizeChange (size) {
       this.limit = size
+      this._getList()
     },
     // 确定
     handleEdit (item) {
@@ -198,6 +288,7 @@ export default {
         content: `删除"${row.name}"的用户吗？`,
         onOk: () => {
           deleteUserById(row._id).then(res => {
+            console.log('🚀 ~ file: index.vue ~ line 212 ~ deleteUserById ~ res', res)
             this.$Message.success('删除成功!')
             this.tableData.splice(index, 1)
           })
@@ -215,7 +306,11 @@ export default {
     },
     // 获取列表数据
     _getList () {
-      getUserList({ page: this.page - 1, limit: this.limit }).then(res => {
+      getUserList({
+        page: this.page - 1,
+        limit: this.limit,
+        option: this.option
+      }).then((res) => {
         this.tableData = res.data
         this.total = res.total
       })
@@ -224,16 +319,76 @@ export default {
     handleAddUser () {
       this.showAdd = true
     },
+    // 添加模态框
     handleItemAdd (item) {
       addUser(item).then(res => {
         if (res.code === 200) {
-          this.tableData.splice(this.tableData.length, 0, res.data)
+          this.tableData.splice(0, 0, res.data)
           this.$Message.success('添加成功!')
         }
       })
     },
     handleAddChangeEvent (value) {
       this.showAdd = value
+    },
+    handleDeleteBatch () {
+      // 批量进行删除
+      if (this.selection.length === 0) {
+        this.$Message.info('请选择需要删除的数据！')
+        return
+      }
+      const msg = this.selection.map((o) => o.username).join(',')
+      this.$Modal.confirm({
+        title: '确定删除用户吗？',
+        content: `删除${msg}的用户`,
+        onOk: () => {
+          const arr = this.selection.map((o) => o._id)
+          deleteUserById(arr).then((res) => {
+            // this.tableData.splice(index, 1)
+            this.tableData = this.tableData.filter(
+              (item) => !arr.includes(item._id)
+            )
+            this.$Message.success('删除成功！')
+            //  this._getList()
+          })
+        },
+        onCancel: () => {
+          this.$Message.info('取消操作！')
+        }
+      })
+    },
+    handleSetBatch () {
+      // 批量设置
+      if (this.selection.length === 0) {
+        this.$Message.info('请选择需要设置的数据！')
+        return
+      }
+      // 批量进行设置 -> vip, 禁言, 角色
+      this.showSet = true
+    },
+    handleSelect (selection) {
+      this.selection = selection
+    },
+    handleSetChangeEvent (value) {
+      this.showSet = value
+    },
+    // 批量设置模态框
+    handleItemSet (settings) {
+      console.log('handleItemSet -> settings', settings)
+      // const msg = this.selection.map((o) => o.username).join(',')
+      const arr = this.selection.map((o) => o._id)
+      updateUserBatchById({ ids: arr, settings }).then((res) => {
+        // this.tableData.splice(index, 1)
+        this.tableData = this.tableData.map((item) => {
+          if (arr.includes(item._id)) {
+            for (var keys of Object.keys(settings)) {
+              item[keys] = settings[keys]
+            }
+          }
+        })
+        this.$Message.success('批量设置成功！')
+        //  this._getList()
+      })
     }
   }
 

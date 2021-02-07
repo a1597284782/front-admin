@@ -11,9 +11,14 @@ const updateUserById = (data) => {
   return axios.post('/admin/update-user', data)
 }
 
-// 获取删除用户
-const deleteUserById = (id) => {
-  return axios.get('/admin/delete-user?id=' + id)
+// 删除用户
+const deleteUserById = (ids) => {
+  return axios.post('/admin/delete-user', { ids })
+}
+
+// 批量修改
+const updateUserBatchById = (data) => {
+  return axios.post('/admin/update-user-settings', data)
 }
 
 // 校验用户名
@@ -29,6 +34,7 @@ const addUser = (data) => {
 export {
   getUserList,
   updateUserById,
+  updateUserBatchById,
   deleteUserById,
   checkUsername,
   addUser

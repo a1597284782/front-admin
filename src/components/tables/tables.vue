@@ -4,27 +4,24 @@
       v-if="searchable && searchPlace === 'top'"
       class="search-con search-con-top"
     >
-      <Select v-model="searchKey" class="search-col">
-        <Option
-          v-for="item in columns"
-          :value="item.key"
-          :key="`search-col-${item.key}`"
-        >
-          <template v-if="item.key !== 'handle'">
-            {{ item.title }}
-          </template>
-        </Option>
+      <Select class="search-col" @on-select="handleSelect">
+        <template v-for="(item, index) in columns">
+          <Option
+            :value="index"
+            :key="`search-col-${item.key}`"
+            v-if="!item.hidden"
+            >{{ item.title }}</Option
+          >
+        </template>
       </Select>
-      <Input
-        @on-change="handleClear"
-        clearable
-        placeholder="输入关键字搜索"
-        class="search-input"
-        v-model="searchValue"
-      />
-      <Button @click="handleSearch" class="search-btn" type="primary"
-        ><Icon type="search" />&nbsp;&nbsp;搜索</Button
-      >
+      <Search
+        :value="searchValue"
+        :item="chooseItem"
+        @changeEvent="handleSearchInput"
+      ></Search>
+      <Button @click="handleSearch" class="search-btn" type="primary">
+        <Icon type="md-search" />&nbsp;&nbsp;搜索
+      </Button>
       <slot name="table-header"></slot>
     </div>
     <Table
@@ -63,8 +60,12 @@
           size="22"
           style="margin-right: 5px"
           @click.stop="editRow(row, index)"
-        />
-        <Icon type="md-trash" size="22" @click.stop="removeRow(row, index)" />
+        ></Icon>
+        <Icon
+          type="md-trash"
+          size="22"
+          @click.stop="removeRow(row, index)"
+        ></Icon>
       </template>
     </Table>
     <div
@@ -77,9 +78,7 @@
           :value="item.key"
           :key="`search-col-${item.key}`"
         >
-          <template v-if="item.key !== 'handle'">
-            {{ item.title }}
-          </template>
+          <template v-if="item.key !== 'handle'">{{ item.title }}</template>
         </Option>
       </Select>
       <Input
@@ -87,9 +86,9 @@
         class="search-input"
         v-model="searchValue"
       />
-      <Button class="search-btn" type="primary"
-        ><Icon type="search" />&nbsp;&nbsp;搜索</Button
-      >
+      <Button class="search-btn" type="primary">
+        <Icon type="search" />&nbsp;&nbsp;搜索
+      </Button>
     </div>
     <a
       id="hrefToExportTable"
@@ -100,10 +99,14 @@
 
 <script>
 import TablesEdit from './edit.vue'
+import Search from './search'
 import handleBtns from './handle-btns'
 import './index.less'
 export default {
   name: 'Tables',
+  components: {
+    Search
+  },
   props: {
     value: {
       type: Array,
@@ -192,6 +195,9 @@ export default {
    */
   data () {
     return {
+      chooseItem: {
+        type: 'input'
+      },
       insideColumns: [],
       insideTableData: [],
       edittingCellId: '',
@@ -201,6 +207,14 @@ export default {
     }
   },
   methods: {
+    handleSelect (index) {
+      const idx = index.value
+      this.chooseItem = this.columns[idx].search
+      this.searchKey = this.columns[idx].key
+      this.searchValue = ['select', 'date'].includes(this.chooseItem.type)
+        ? []
+        : ''
+    },
     suportEdit (item, index) {
       item.render = (h, params) => {
         return h(TablesEdit, {
@@ -211,7 +225,7 @@ export default {
             editable: this.editable
           },
           on: {
-            input: val => {
+            input: (val) => {
               this.edittingText = val
             },
             'on-start-edit': (params) => {
@@ -224,9 +238,14 @@ export default {
             },
             'on-save-edit': (params) => {
               // eslint-disable-next-line vue/no-mutating-props
-              this.value[params.row.initRowIndex][params.column.key] = this.edittingText
+              this.value[params.row.initRowIndex][
+                params.column.key
+              ] = this.edittingText
               this.$emit('input', this.value)
-              this.$emit('on-save-edit', Object.assign(params, { value: this.edittingText }))
+              this.$emit(
+                'on-save-edit',
+                Object.assign(params, { value: this.edittingText })
+              )
               this.edittingCellId = ''
             }
           }
@@ -237,13 +256,16 @@ export default {
     surportHandle (item) {
       const options = item.options || []
       const insideBtns = []
-      options.forEach(item => {
+      options.forEach((item) => {
         if (handleBtns[item]) insideBtns.push(handleBtns[item])
       })
       const btns = item.button ? [].concat(insideBtns, item.button) : insideBtns
       item.render = (h, params) => {
         params.tableData = this.value
-        return h('div', btns.map(item => item(h, params, this)))
+        return h(
+          'div',
+          btns.map((item) => item(h, params, this))
+        )
       }
       return item
     },
@@ -256,13 +278,28 @@ export default {
       })
     },
     setDefaultSearchKey () {
-      this.searchKey = this.columns[0].key !== 'handle' ? this.columns[0].key : (this.columns.length > 1 ? this.columns[1].key : '')
-    },
-    handleClear (e) {
-      if (e.target.value === '') this.insideTableData = this.value
+      this.searchKey =
+        this.columns[0].key !== 'handle'
+          ? this.columns[0].key
+          : this.columns.length > 1
+            ? this.columns[1].key
+            : ''
     },
     handleSearch () {
-      this.insideTableData = this.value.filter(item => item[this.searchKey].indexOf(this.searchValue) > -1)
+      this.$emit('searchEvent', {
+        item: this.searchKey,
+        search: this.searchValue
+      })
+      // this.insideTableData = this.value.filter(
+      //   (item) => item[this.searchKey].indexOf(this.searchValue) > -1
+      // )
+    },
+    handleSearchInput (item) {
+      if (this.chooseItem.type === 'input') {
+        this.searchValue = item.target.value // 取得Input组件中的数据
+      } else {
+        this.searchValue = item
+      }
     },
     handleTableData () {
       this.insideTableData = this.value.map((item, index) => {
@@ -321,7 +358,7 @@ export default {
     },
     value (val) {
       this.handleTableData()
-      if (this.searchable) this.handleSearch()
+      // if (this.searchable) this.handleSearch()
     }
   },
   mounted () {

@@ -7,13 +7,18 @@ const getList = (options) => {
 }
 
 // 删除文章
-const deletePostById = (id) => {
-  return axios.get('/content/delete?tid=' + id)
+const deletePostById = (ids) => {
+  return axios.post('/content/delete', { ids })
 }
 
 // 更新文章
 const updatePostById = (data) => {
   return axios.post('/content/update-id', data)
+}
+
+// 批量修改
+const updatePostBatchById = (data) => {
+  return axios.post('/content/update-post-settings', data)
 }
 
 // 内容管理 -> 标签管理
@@ -41,6 +46,7 @@ export {
   getList,
   deletePostById,
   updatePostById,
+  updatePostBatchById,
   getTags,
   addTag,
   removeTag,

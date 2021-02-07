@@ -10,11 +10,17 @@
         :columns="columns"
         @on-row-edit="handleRowEdit"
         @on-row-remove="handleRowRemove"
+        @on-selection-change="handleSelect"
+        @searchEvent="handleSearch"
       />
       <Row type="flex" justify="space-between" align="middle">
-        <Button style="margin: 10px 0" type="primary" @click="exportExcel"
-          >导出为Excel文件</Button
-        >
+        <Col class="ctrls">
+          <Button @click="handleDeleteBatch()">批量删除</Button>
+          <Button @click="handleSetBatch()">批量设置</Button>
+          <Button style="margin: 10px 0" type="primary" @click="exportExcel">
+            <Icon type="md-download"></Icon>导出表格
+          </Button>
+        </Col>
         <Page
           :total="total"
           :current="page"
@@ -34,20 +40,27 @@
       @editEvent="handleEdit"
       @changeEvent="handleChangeEvent"
     ></EdiModel>
+    <BatchSet
+      :isShow="showSet"
+      @editEvent="handleItemSet"
+      @changeEvent="handleSetChangeEvent"
+    ></BatchSet>
   </div>
 </template>
 
 <script>
 import Tables from '_c/tables'
 import EdiModel from './index/edit'
-import { getList, deletePostById, updatePostById } from '@/api/content'
+import { getList, deletePostById, updatePostById, updatePostBatchById } from '@/api/content'
+import BatchSet from './index/batchSet'
 import dayjs from 'dayjs'
 
 export default {
   name: 'content_management',
   components: {
     Tables,
-    EdiModel
+    EdiModel,
+    BatchSet
   },
   data () {
     return {
@@ -66,9 +79,18 @@ export default {
       // 表头
       columns: [
         {
+          type: 'selection',
+          width: 60,
+          align: 'center',
+          hidden: true
+        },
+        {
           title: '标题',
           key: 'title',
-          minWidth: 400
+          minWidth: 400,
+          search: {
+            type: 'input'
+          }
         },
         {
           title: '创建时间',
@@ -79,6 +101,9 @@ export default {
             return h('div', [
               h('span', dayjs(params.row.created).format('YYYY-MM-DD HH:mm:ss'))
             ])
+          },
+          search: {
+            type: 'date'
           }
         },
         {
@@ -91,6 +116,9 @@ export default {
             return h('div', [
               h('span', params.row.uid.name)
             ])
+          },
+          search: {
+            type: 'input'
           }
         },
         {
@@ -124,13 +152,39 @@ export default {
                 result = '全部'
             }
             return h('div', [h('span', result)])
+          },
+          search: {
+            type: 'select',
+            options: [
+              {
+                key: '提问',
+                value: 'ask'
+              },
+              {
+                key: '建议',
+                value: 'advise'
+              },
+              {
+                key: '交流',
+                value: 'discuss'
+              },
+              {
+                key: '分享',
+                value: 'share'
+              },
+              {
+                key: '公告',
+                value: 'notice'
+              }
+            ]
           }
         },
         {
           title: '积分',
           key: 'fav',
           minWidth: 100,
-          align: 'center'
+          align: 'center',
+          hidden: true
         },
         {
           title: '标签',
@@ -141,6 +195,9 @@ export default {
             return h('div', [
               h('span', params.row.tags.map((o) => o.name).join(',') || '')
             ])
+          },
+          search: {
+            type: 'input'
           }
         },
         {
@@ -150,19 +207,24 @@ export default {
           align: 'center',
           render: (h, params) => {
             return h('div', [h('span', params.row.isEnd === '0' ? '否' : '是')])
+          },
+          search: {
+            type: 'radio'
           }
         },
         {
           title: '阅读计数',
           key: 'reads',
           minWidth: 100,
-          align: 'center'
+          align: 'center',
+          hidden: true
         },
         {
           title: '回答计数',
           key: 'answer',
           minWidth: 100,
-          align: 'center'
+          align: 'center',
+          hidden: true
         },
         {
           title: '状态',
@@ -181,6 +243,9 @@ export default {
                 }
               })
             ])
+          },
+          search: {
+            type: 'radio'
           }
         },
         {
@@ -198,6 +263,9 @@ export default {
                 }
               })
             ])
+          },
+          search: {
+            type: 'radio'
           }
         },
         {
@@ -206,13 +274,88 @@ export default {
           slot: 'action',
           fixed: 'right',
           minWidth: 160,
-          align: 'center'
+          align: 'center',
+          hidden: true
         }
       ],
-      tableData: []
+      tableData: [],
+      option: {},
+      showSet: false,
+      selection: []
     }
   },
   methods: {
+    handleDeleteBatch () {
+      // 批量进行删除
+      if (this.selection.length === 0) {
+        this.$Message.info('请选择需要删除的数据！')
+        return
+      }
+      const msg = this.selection.map((o) => o.title).join(',')
+      this.$Modal.confirm({
+        title: '确定删除吗？',
+        content: `删除${msg}的文章吗？`,
+        onOk: () => {
+          const arr = this.selection.map((o) => o._id)
+          deletePostById(arr).then((res) => {
+            // this.tableData.splice(index, 1)
+            this.tableData = this.tableData.filter(
+              (item) => !arr.includes(item._id)
+            )
+            this.$Message.success('删除成功！')
+            //  this._getList()
+          })
+        },
+        onCancel: () => {
+          this.$Message.info('取消操作！')
+        }
+      })
+    },
+    handleSetBatch () {
+      // 批量修改
+      if (this.selection.length === 0) {
+        this.$Message.info('请选择需要修改的数据！')
+        return
+      }
+      // 批量进行设置 -> vip, 禁言, 角色
+      this.showSet = true
+    },
+    handleSelect (selection) {
+      this.selection = selection
+    },
+    handleSetChangeEvent (value) {
+      this.showSet = value
+    },
+    // 批量设置模态框
+    handleItemSet (settings) {
+      // const msg = this.selection.map((o) => o.title).join(',')
+      const arr = this.selection.map((o) => o._id)
+      updatePostBatchById({ ids: arr, settings }).then((res) => {
+        // this.tableData.splice(index, 1)
+        this.tableData.map((item) => {
+          if (arr.includes(item._id)) {
+            for (var keys of Object.keys(settings)) {
+              item[keys] = settings[keys]
+            }
+          }
+        })
+        this.$Message.success('批量设置成功！')
+        //  this._getList()
+      })
+    },
+    handleSearch (value) {
+      console.log('🚀 ~ file: index.vue ~ line 355 ~ handleSearch ~ value', value)
+      // 判断是否有新的查询内容的传递，把分页数据归0
+      if (
+        (typeof this.option.search !== 'undefined' &&
+          value.search !== this.option.search) ||
+        this.option === {}
+      ) {
+        this.page = 1 // 从1开始
+      }
+      this.option = value
+      this._getList()
+    },
     // 确定
     handleEdit (item) {
       updatePostById(item).then(res => {
@@ -275,7 +418,20 @@ export default {
     },
     // 请求
     _getList () {
-      getList({ page: this.page - 1, limit: this.limit }).then(res => {
+      getList({
+        page: this.page - 1,
+        limit: this.limit,
+        ...this.option
+      }).then((res) => {
+        // 方法一： -> 修改getList接口
+        // const data = res.data
+        // data.forEach((item) => {
+        //   if (item.status === 0) {
+        //     item.status = '打开回复'
+        //   } else {
+        //     item.status = '禁止回复'
+        //   }
+        // })
         this.tableData = res.data
         this.total = res.total
       })
@@ -288,5 +444,10 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss" scoped>
+.ctrls {
+  button {
+    margin-right: 10px;
+  }
+}
 </style>
