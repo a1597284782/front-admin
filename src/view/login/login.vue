@@ -33,8 +33,6 @@ export default {
           this.$router.push({
             name: this.$config.homeName
           })
-        } else {
-          this.$Message.error(res.msg)
         }
         // this.getUserInfo().then(res => {
         //   this.$router.push({

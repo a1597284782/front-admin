@@ -20,15 +20,15 @@
         </template>
       </tables>
       <Row type="flex" justify="space-between" align="middle">
-        <Col class="ctrls">
+        <i-col class="ctrls">
           <Button type="primary" @click="exportExcel">
             <Icon type="md-download"></Icon>
             导出为Excel文件
           </Button>
           <Button @click="handleDeleteBatch()">批量删除</Button>
           <Button @click="handleSetBatch()">批量设置</Button>
-        </Col>
-        <Col
+        </i-col>
+        <i-col
           ><Page
             :total="total"
             :current="page"
@@ -39,7 +39,7 @@
             show-total
             @on-change="onPageChange"
             @on-page-size-change="onPageSizeChange"
-        /></Col>
+        /></i-col>
       </Row>
     </Card>
     <EditModel

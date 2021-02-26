@@ -14,13 +14,13 @@
         @searchEvent="handleSearch"
       />
       <Row type="flex" justify="space-between" align="middle">
-        <Col class="ctrls">
+        <i-col class="ctrls">
           <Button @click="handleDeleteBatch()">批量删除</Button>
           <Button @click="handleSetBatch()">批量设置</Button>
           <Button style="margin: 10px 0" type="primary" @click="exportExcel">
             <Icon type="md-download"></Icon>导出表格
           </Button>
-        </Col>
+        </i-col>
         <Page
           :total="total"
           :current="page"
