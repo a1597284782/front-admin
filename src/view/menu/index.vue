@@ -30,7 +30,12 @@
           ></MenuForm>
         </Card>
         <Card :title="$t('resources')" :dis-hover="true" :shadow="true">
-          <OperationsTable :columns="columns" :tableData="tableData" :isEdit="isEdit"></OperationsTable>
+          <OperationsTable
+            :columns="columns"
+            :tableData="tableData"
+            :isEdit="isEdit"
+            @on-change="handleTableChange"
+          ></OperationsTable>
         </Card>
       </i-col>
     </Row>
@@ -147,10 +152,24 @@ export default {
     window.vue = this
   },
   methods: {
+    // 选中树菜单时
     handleTreeChange (item) {
-      this.selectNode = item
+      console.log('🚀 ~ file: index.vue ~ line 156 ~ handleTreeChange ~ item', item)
+      // 非编辑状态
+      if (!this.isEdit) {
+        if (item.length) {
+          this.selectNode = item
+          this.formData = item[0]
+          this.tableData = item[0].operations
+        } else {
+          this.initForm()
+        }
+      } else {
+        this.$Message.error('当前为编辑状态，请取消编辑后查看！')
+      }
     },
     addMenu (type) {
+      this.initForm()
       this.type = type
       this.isEdit = true
     },
@@ -163,6 +182,9 @@ export default {
     },
     submit (data) {
       data.title = this.formData.name
+      if (this.tableData.length > 0) {
+        data.operations = this.tableData
+      }
       // 1. 获取 formData中的数据 -> menuData中
       //   a. type -> 数据插入的节点
       //   b. 数据需要按照tree的数据格式进行格式化 -> title
@@ -208,6 +230,11 @@ export default {
         type: 'menu',
         operations: []
       }
+      this.tableData = []
+    },
+    handleTableChange (table) {
+      console.log('handleTableChange -> table', table)
+      this.tableData = table
     }
   }
 }

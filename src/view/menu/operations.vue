@@ -126,7 +126,9 @@ export default {
       this.showAdd = true
     },
     handleItemAdd (item) {
+      // 每次添加模态框架触发的添加数据的事件
       this.localData.push(item)
+      this.$emit('on-change', this.localData)
     },
     handleAddChangeEvent (value) {
       this.showAdd = value

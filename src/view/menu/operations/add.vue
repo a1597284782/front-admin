@@ -80,6 +80,7 @@ export default {
           this.$emit('editEvent', { ...this.localItem })
           setTimeout(() => {
             this.$refs.table.resetFields()
+            this.localItem.regmark = ''
           }, 0)
           this.$Message.info('添加成功！')
         } else {
@@ -91,6 +92,7 @@ export default {
     },
     cancel () {
       this.$refs.table.resetFields()
+      this.localItem.regmark = ''
       this.$emit('changeEvent', false)
       this.$Message.info('取消编辑！')
     }
