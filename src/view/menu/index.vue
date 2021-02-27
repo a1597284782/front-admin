@@ -5,12 +5,23 @@
         <Card :dis-hover="true" :shadow="true">
           <i-row type="flex" align="middle" justify="center">
             <ButtonGroup class="imooc-btn-group">
-              <Button size="small" icon="md-add">新增</Button>
-              <Button size="small" icon="ios-create" type="primary">修改</Button>
+              <Button size="small">
+                <Dropdown @on-click="addMenu">
+                  <a href="javascript:void(0)">
+                    <Icon type="md-add"></Icon>
+                    <span class="imooc-dropdown">新增</span>
+                  </a>
+                  <DropdownMenu slot="list">
+                    <DropdownItem name="bro">兄弟节点</DropdownItem>
+                    <DropdownItem name="child" :disabled="menuData.length === 0">子节点</DropdownItem>
+                  </DropdownMenu>
+                </Dropdown>
+              </Button>
+              <Button size="small" icon="ios-create" type="primary" @click="editMenu()">修改</Button>
               <Button size="small" icon="md-trash" type="error">删除</Button>
             </ButtonGroup>
           </i-row>
-          <Tree :data="data1" ref="tree"></Tree>
+          <Tree :data="menuData" ref="tree" @on-select-change="handleTreeChange"></Tree>
         </Card>
       </i-col>
       <i-col span="18" :sm="24" :md="15" :lg="18">
@@ -69,6 +80,10 @@
             <FormItem label="重定向">
               <i-input v-model="formDate.redirect" placeholder="重定向组件"></i-input>
             </FormItem>
+            <FormItem v-if="isEdit">
+              <Button type="primary" @click="submit()">确定</Button>
+              <Button style="margin-left: 8px" @click="cancel()">取消</Button>
+            </FormItem>
           </Form>
         </Card>
         <Card :title="$t('resources')" :dis-hover="true" :shadow="true">
@@ -123,38 +138,9 @@ export default {
   data () {
     return {
       isEdit: false,
-      data1: [
-        {
-          title: 'parent 1',
-          expand: true,
-          children: [
-            {
-              title: 'parent 1-1',
-              expand: true,
-              children: [
-                {
-                  title: 'leaf 1-1-1'
-                },
-                {
-                  title: 'leaf 1-1-2'
-                }
-              ]
-            },
-            {
-              title: 'parent 1-2',
-              expand: true,
-              children: [
-                {
-                  title: 'leaf 1-2-1'
-                },
-                {
-                  title: 'leaf 1-2-1'
-                }
-              ]
-            }
-          ]
-        }
-      ],
+      selectNode: [],
+      menuData: [],
+      type: '',
       formDate: {
         name: '',
         path: '',
@@ -265,7 +251,94 @@ export default {
       pageArr: [10, 20, 30, 50, 100]
     }
   },
+  mounted () {
+    window.vue = this
+  },
   methods: {
+    addMenu (type) {
+      this.type = type
+      if (this.selectNode.length > 0 || this.menuData.length === 0) {
+        this.isEdit = true
+      } else {
+        this.$Message.error('请选择菜单节点后再添加！')
+      }
+    },
+    submit () {
+      this.$refs.form.validate((valid) => {
+        if (valid) {
+          // 检验通过后的逻辑
+          const data = {
+            title: this.formDate.name,
+            ...this.formDate,
+            expand: true
+          }
+          // 1. 获取 formData中的数据 -> menuData中
+          //   a. type -> 数据插入的节点
+          //   b. 数据需要按照tree的数据格式进行格式化 -> title
+          if (this.type === 'bro') {
+            // 兄弟节点
+            if (this.menuData.length === 0) {
+              this.menuData.push(data)
+              this.isEdit = false
+              // 清空formData中的数据
+              this.$refs.form.resetFields()
+            } else {
+              // this.selectNode.length > 0
+              const selectNode = this.selectNode[0]
+              // this.menuData = this.menuData -> children -> ... -> selectNode
+              // 1. parent 2. selectNdoe -> new menuData
+              const getMenu = (parent, select) => {
+                // 1. 遍历parent -> select push
+                // 2. children -> push child
+                // 3. return parent
+                for (let i = 0; i < parent.length; i++) {
+                  const item = parent[i]
+                  // 去重
+                  if (item.name === select.name) {
+                    // 排序
+                    parent.push(data)
+                    return parent
+                  } else {
+                    if (item.children && item.children.length > 0) {
+                      getMenu(item.children, select)
+                    }
+                  }
+                }
+                return parent
+              }
+              this.menuData = getMenu(this.menuData, selectNode)
+            }
+          } else if (this.type === 'child') {
+            // 子节点
+            if (typeof this.selectNode[0].children === 'undefined') {
+              this.$set(this.selectNode[0], 'children', [data])
+            } else {
+              // 排序？
+              this.$set(this.selectNode[0], 'children', [
+                ...this.selectNode[0].children,
+                data
+              ])
+            }
+          }
+          // 恢复到默认状态
+          this.isEdit = false
+          this.$refs.form.resetFields()
+          // 2. 提交对应的数据到后台接口
+        } else {
+          this.$Message.error('请检验表单数据！')
+        }
+      })
+    },
+    editMenu () {
+      if (this.selectNode.length > 0) {
+        this.isEdit = true
+      } else {
+        this.$Message.error('请选择菜单节点后再编辑！')
+      }
+    },
+    handleTreeChange (item) {
+      this.selectNode = item
+    },
     handleRowEdit () {},
     handleRowRemove () {},
     handleSelect () {},
@@ -305,6 +378,7 @@ export default {
       // 批量进行设置 -> vip, 禁言, 角色
       this.showSet = true
     },
+    handleAdd () {},
     onPageChange (page) {
       this.page = page
     },
@@ -322,6 +396,9 @@ export default {
       & + span {
         display: none;
       }
+    }
+    .imooc-dropdown {
+      display: none;
     }
   }
 }
