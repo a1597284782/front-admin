@@ -4,8 +4,8 @@
       <i-col span="6" :sm="24" :md="9" :lg="6">
         <Card :dis-hover="true" :shadow="true">
           <i-row type="flex" align="middle" justify="center">
-            <ButtonGroup class="imooc-btn-group">
-              <Button size="small">
+            <ButtonGroup class="imooc-btn-group" :class="{'editing': isEdit}">
+              <Button size="small" :disabled="isEdit">
                 <Dropdown @on-click="addMenu">
                   <a href="javascript:void(0)">
                     <Icon type="md-add"></Icon>
@@ -17,8 +17,20 @@
                   </DropdownMenu>
                 </Dropdown>
               </Button>
-              <Button size="small" icon="ios-create" type="primary" @click="editMenu()">修改</Button>
-              <Button size="small" icon="md-trash" type="error">删除</Button>
+              <Button
+                size="small"
+                icon="ios-create"
+                type="primary"
+                @click="editMenu()"
+                :disabled="isEdit"
+              >修改</Button>
+              <Button
+                size="small"
+                icon="md-trash"
+                type="error"
+                @click="deleteMenu()"
+                :disabled="isEdit"
+              >删除</Button>
             </ButtonGroup>
           </i-row>
           <Tree :data="menuData" ref="tree" @on-select-change="handleTreeChange"></Tree>
@@ -131,6 +143,7 @@
 
 <script>
 import Tables from '_c/tables'
+import { sortObj } from '../../libs/util'
 export default {
   components: {
     Tables
@@ -268,10 +281,10 @@ export default {
         if (valid) {
           // 检验通过后的逻辑
           const data = {
-            title: this.formDate.name,
             ...this.formDate,
             expand: true
           }
+          data.title = this.formDate.name
           // 1. 获取 formData中的数据 -> menuData中
           //   a. type -> 数据插入的节点
           //   b. 数据需要按照tree的数据格式进行格式化 -> title
@@ -297,6 +310,7 @@ export default {
                   if (item.name === select.name) {
                     // 排序
                     parent.push(data)
+                    parent = sortObj(parent, 'sort')
                     return parent
                   } else {
                     if (item.children && item.children.length > 0) {
@@ -313,25 +327,91 @@ export default {
             if (typeof this.selectNode[0].children === 'undefined') {
               this.$set(this.selectNode[0], 'children', [data])
             } else {
+              let arr = [...this.selectNode[0].children, data]
+              arr = sortObj(arr, 'sort')
               // 排序？
-              this.$set(this.selectNode[0], 'children', [
-                ...this.selectNode[0].children,
-                data
-              ])
+              this.$set(this.selectNode[0], 'children', arr)
             }
+          } else {
+            // 更新菜单节点
+            const updateNode = (tree, node) => {
+              for (let i = 0; i < tree.length; i++) {
+                const currentNode = tree[i]
+                if (currentNode.nodeKey === node.nodeKey) {
+                  tree.splice(i, 1, node)
+                  return tree
+                } else {
+                  if (tree.children && tree.children.length > 0) {
+                    updateNode(tree.children, node)
+                  }
+                }
+              }
+              return tree
+            }
+            this.menuData = updateNode(this.menuData, data)
+            this.$set(this.selectNode, 0, data)
           }
           // 恢复到默认状态
-          this.isEdit = false
-          this.$refs.form.resetFields()
+          this.initFields()
           // 2. 提交对应的数据到后台接口
         } else {
           this.$Message.error('请检验表单数据！')
         }
       })
     },
+    deleteMenu () {
+      if (this.selectNode.length > 0 || this.menuData.length === 0) {
+        this.$Modal.confirm({
+          title: '确定删除吗？',
+          content: `删除${this.selectNode[0].title}的菜单项吗？`,
+          onOk: () => {
+            const deleteNode = (tree, node) => {
+              for (let i = 0; i < tree.length; i++) {
+                const currentNode = tree[i]
+                if (currentNode.nodeKey === node.nodeKey) {
+                  tree.splice(i, 1)
+                  return tree
+                } else {
+                  if (tree.children && tree.children.length > 0) {
+                    deleteNode(tree.children, node)
+                  }
+                }
+              }
+              return tree
+            }
+            this.menuData = deleteNode(this.menuData, this.selectNode[0])
+            this.selectNode = []
+          }
+        })
+      } else {
+        this.$Message.error('请选择菜单节点后再进行删除！')
+      }
+    },
+    cancel () {
+      this.initFields()
+    },
+    initFields () {
+      this.isEdit = false
+      this.$refs.form.resetFields()
+      this.formDate = {
+        name: '',
+        path: '',
+        component: '',
+        hideInBread: false,
+        hideInMenu: false,
+        notCache: false,
+        icon: '',
+        sort: 0,
+        redirect: '',
+        type: 'menu',
+        operations: []
+      }
+      this.type = ''
+    },
     editMenu () {
       if (this.selectNode.length > 0) {
         this.isEdit = true
+        this.formDate = { ...this.selectNode[0] }
       } else {
         this.$Message.error('请选择菜单节点后再编辑！')
       }
@@ -406,6 +486,17 @@ export default {
   .ivu-icon {
     & + span {
       margin-left: 0;
+    }
+  }
+  &.editing {
+    a {
+      color: #dcdee2;
+    }
+    .ivu-btn-primary {
+      border-color: #dcdee2 !important;
+    }
+    button:first-child {
+      border-right: 0;
     }
   }
 }

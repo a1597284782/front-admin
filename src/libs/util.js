@@ -416,3 +416,7 @@ export const setTitle = (routeItem, vm) => {
   const resTitle = pageTitle ? `${title} - ${pageTitle}` : title
   window.document.title = resTitle
 }
+
+export const sortObj = (arr, property) => {
+  return arr.sort((m, n) => m[property] - n[property])
+}
