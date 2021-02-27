@@ -417,6 +417,63 @@ export const setTitle = (routeItem, vm) => {
   window.document.title = resTitle
 }
 
+// menu/index 页面
+// 排序
 export const sortObj = (arr, property) => {
   return arr.sort((m, n) => m[property] - n[property])
+}
+
+// 递归 处理树形菜单
+export const updateNode = (tree, node) => {
+  for (let i = 0; i < tree.length; i++) {
+    const currentNode = tree[i]
+    if (currentNode.nodeKey === node.nodeKey) {
+      tree.splice(i, 1, node)
+      return tree
+    } else {
+      if (currentNode.children && currentNode.children.length > 0) {
+        updateNode(currentNode.children, node)
+      }
+    }
+  }
+  return tree
+}
+
+// this.menuData = this.menuData -> children -> ... -> selectNode
+// 1. parent 2. selectNdoe -> new menuData
+export const insertNode = (parent, select, data) => {
+  // 1. 遍历parent -> select push
+  // 2. children -> push child
+  // 3. return parent
+  for (let i = 0; i < parent.length; i++) {
+    const item = parent[i]
+    // 去重
+    if (item.nodeKey === select.nodeKey) {
+      // 排序
+      parent.push(data)
+      parent = sortObj(parent, 'sort')
+      return parent
+    } else {
+      if (item.children && item.children.length > 0) {
+        insertNode(item.children, select, data)
+      }
+    }
+  }
+  return parent
+}
+
+// 递归删除树形菜单
+export const deleteNode = (tree, node) => {
+  for (let i = 0; i < tree.length; i++) {
+    const currentNode = tree[i]
+    if (currentNode.nodeKey === node.nodeKey) {
+      tree.splice(i, 1)
+      return tree
+    } else {
+      if (currentNode.children && currentNode.children.length > 0) {
+        deleteNode(currentNode.children, node)
+      }
+    }
+  }
+  return tree
 }
