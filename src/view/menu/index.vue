@@ -1,12 +1,19 @@
 <template>
   <div>
     <Row :gutter="10">
-      <i-col span="5" :sm="24" :md="9" :lg="5">
+      <i-col span="6" :sm="24" :md="9" :lg="6">
         <Card :dis-hover="true" :shadow="true">
+          <i-row type="flex" align="middle" justify="center">
+            <ButtonGroup class="imooc-btn-group">
+              <Button size="small" icon="md-add">新增</Button>
+              <Button size="small" icon="ios-create" type="primary">修改</Button>
+              <Button size="small" icon="md-trash" type="error">删除</Button>
+            </ButtonGroup>
+          </i-row>
           <Tree :data="data1" ref="tree"></Tree>
         </Card>
       </i-col>
-      <i-col span="19" :sm="24" :md="15" :lg="19">
+      <i-col span="18" :sm="24" :md="15" :lg="18">
         <Card
           :title="$t('Menu Options')"
           icon="ios-options"
@@ -14,7 +21,13 @@
           :shadow="true"
           style="margin-bottom: 10px;"
         >
-          <Form ref="form" :model="formDate" :rules="formRules" :label-width="80">
+          <Form
+            :disabled="!isEdit"
+            ref="form"
+            :model="formDate"
+            :rules="formRules"
+            :label-width="80"
+          >
             <FormItem label="菜单标题" prop="name">
               <i-input v-model="formDate.name" placeholder="请输入菜单名称"></i-input>
             </FormItem>
@@ -59,7 +72,42 @@
           </Form>
         </Card>
         <Card :title="$t('resources')" :dis-hover="true" :shadow="true">
-          <Table border ref="selection" :columns="columns4" :data="data2"></Table>
+          <tables
+            ref="tables"
+            searchable
+            search-place="top"
+            :columns="columns"
+            v-model="tableData"
+            @on-row-edit="handleRowEdit"
+            @on-row-remove="handleRowRemove"
+            @on-selection-change="handleSelect"
+            @searchEvent="handleSearch"
+          >
+            <template v-slot:table-header>
+              <Button @click="handleAdd" class="search-btn" type="primary">
+                <Icon type="md-person-add" />&nbsp;&nbsp;添加
+              </Button>
+            </template>
+          </tables>
+          <Row type="flex" justify="space-between" align="middle">
+            <i-col class="ctrls">
+              <Button @click="handleDeleteBatch()">批量删除</Button>
+              <Button @click="handleSetBatch()">批量设置</Button>
+            </i-col>
+            <i-col>
+              <Page
+                :total="total"
+                :current="page"
+                :page-size="limit"
+                :page-size-opts="pageArr"
+                show-elevator
+                show-sizer
+                show-total
+                @on-change="onPageChange"
+                @on-page-size-change="onPageSizeChange"
+              />
+            </i-col>
+          </Row>
         </Card>
       </i-col>
     </Row>
@@ -67,9 +115,14 @@
 </template>
 
 <script>
+import Tables from '_c/tables'
 export default {
+  components: {
+    Tables
+  },
   data () {
     return {
+      isEdit: false,
       data1: [
         {
           title: 'parent 1',
@@ -138,55 +191,145 @@ export default {
           }
         ]
       },
-      columns4: [
+      columns: [
         {
           type: 'selection',
           width: 60,
+          align: 'center',
+          hidden: true
+        },
+        {
+          title: '资源名称',
+          key: 'name',
+          search: {
+            type: 'input'
+          }
+        },
+        {
+          title: '资源路径',
+          key: 'path',
+          search: {
+            type: 'input'
+          }
+        },
+        {
+          title: '请求类型',
+          key: 'methods',
+          search: {
+            type: 'input'
+          }
+        },
+        {
+          title: '资源类型',
+          key: 'type',
+          search: {
+            type: 'radio',
+            options: [
+              {
+                key: '全部',
+                value: ''
+              },
+              {
+                key: '接口',
+                value: 'api'
+              },
+              {
+                key: '按钮',
+                value: 'btn'
+              }
+            ]
+          }
+        },
+        {
+          title: '资源描述',
+          key: 'regmark',
+          search: {
+            type: 'input'
+          }
+        },
+        {
+          title: '设置',
+          key: 'settings',
+          slot: 'action',
+          hidden: true,
+          fixed: 'right',
+          width: 100,
           align: 'center'
-        },
-        {
-          title: 'Name',
-          key: 'name'
-        },
-        {
-          title: 'Age',
-          key: 'age'
-        },
-        {
-          title: 'Address',
-          key: 'address'
         }
       ],
-      data2: [
-        {
-          name: 'John Brown',
-          age: 18,
-          address: 'New York No. 1 Lake Park',
-          date: '2016-10-03'
+      selection: [],
+      tableData: [],
+      total: 0,
+      page: 1,
+      limit: 10,
+      pageArr: [10, 20, 30, 50, 100]
+    }
+  },
+  methods: {
+    handleRowEdit () {},
+    handleRowRemove () {},
+    handleSelect () {},
+    handleSearch () {},
+    handleDeleteBatch () {
+      // 批量进行删除
+      if (this.selection.length === 0) {
+        this.$Message.info('请选择需要删除的数据！')
+        return
+      }
+      const msg = this.selection.map((o) => o.username).join(',')
+      this.$Modal.confirm({
+        title: '确定删除用户吗？',
+        content: `删除${msg}的用户`,
+        onOk: () => {
+          const arr = this.selection.map((o) => o._id)
+          deleteUserById(arr).then((res) => {
+            // this.tableData.splice(index, 1)
+            this.tableData = this.tableData.filter(
+              (item) => !arr.includes(item._id)
+            )
+            this.$Message.success('删除成功！')
+            //  this._getList()
+          })
         },
-        {
-          name: 'Jim Green',
-          age: 24,
-          address: 'London No. 1 Lake Park',
-          date: '2016-10-01'
-        },
-        {
-          name: 'Joe Black',
-          age: 30,
-          address: 'Sydney No. 1 Lake Park',
-          date: '2016-10-02'
-        },
-        {
-          name: 'Jon Snow',
-          age: 26,
-          address: 'Ottawa No. 2 Lake Park',
-          date: '2016-10-04'
+        onCancel: () => {
+          this.$Message.info('取消操作！')
         }
-      ]
+      })
+    },
+    handleSetBatch () {
+      // 批量进行删除
+      if (this.selection.length === 0) {
+        this.$Message.info('请选择需要删除的数据！')
+        return
+      }
+      // 批量进行设置 -> vip, 禁言, 角色
+      this.showSet = true
+    },
+    onPageChange (page) {
+      this.page = page
+    },
+    onPageSizeChange (size) {
+      this.limit = size
     }
   }
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
+@media screen and (max-width: 1200px) {
+  .imooc-btn-group {
+    .ivu-icon {
+      & + span {
+        display: none;
+      }
+    }
+  }
+}
+.imooc-btn-group {
+  .ivu-icon {
+    & + span {
+      margin-left: 0;
+    }
+  }
+}
 </style>
