@@ -31,11 +31,27 @@ const addUser = (data) => {
   return axios.post('/admin/add-user', data)
 }
 
+// 添加菜单
+const addMenu = (data) => axios.post('/admin/add-menu', data)
+
+// 获取菜单
+const getMenu = () => axios.get('/admin/get-menu')
+
+// 更新菜单
+const updateMenu = (data) => axios.post('/admin/update-menu', data)
+
+// 删除菜单
+const deleteMenu = (data) => axios.post('/admin/delete-menu', data)
+
 export {
   getUserList,
   updateUserById,
   updateUserBatchById,
   deleteUserById,
   checkUsername,
-  addUser
+  addUser,
+  addMenu,
+  getMenu,
+  updateMenu,
+  deleteMenu
 }

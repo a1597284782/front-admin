@@ -167,7 +167,9 @@ export const getNewTagList = (list, newRoute) => {
  * @param {*} route 路由列表
  */
 const hasAccess = (access, route) => {
-  if (route.meta && route.meta.access) { return hasOneOf(access, route.meta.access) } else return true
+  if (route.meta && route.meta.access) {
+    return hasOneOf(access, route.meta.access)
+  } else return true
 }
 
 /**
@@ -476,4 +478,47 @@ export const deleteNode = (tree, node) => {
     }
   }
   return tree
+}
+
+// 删除子节点上的parent属性
+export const deleteKey = (node, property) => {
+  if (node.children && node.children.length > 0) {
+    node.children.forEach(item => {
+      delete item[property]
+      if (item.children && item.children.length > 0) {
+        deleteKey(item.children, property)
+      }
+    })
+  }
+  return node
+}
+
+// 获取节点的父级节点（一级节点）
+export const getNode = (arr, node) => {
+  for (let i = 0; i < arr.length; i++) {
+    const currentNode = arr[i]
+    // 当前的循环中是否有该节点
+    if (currentNode.nodeKey === node.nodeKey) {
+      if (!currentNode.parent) {
+        // 删除子节点上的parent属性
+        deleteKey(currentNode, 'parent')
+        return currentNode
+      } else {
+        return true
+      }
+    } else {
+      // 判断子节点中是否有该节点？
+      if (currentNode.children && currentNode.children.length > 0) {
+        currentNode.children.map(o => {
+          o.parent = currentNode
+        })
+        // 当前循环中是否有该节点
+        if (getNode(currentNode.children, node)) {
+          // 删除子节点上的parent属性
+          deleteKey(currentNode, 'parent')
+          return currentNode
+        }
+      }
+    }
+  }
 }
