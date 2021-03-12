@@ -64,13 +64,13 @@
     >
       <Form :model="formItem" :label-width="80" :rules="formRules" ref="form">
         <FormItem label="角色名称" prop="name">
-          <Input v-model="formItem.name" placeholder="请输入角色名称"></Input>
+          <i-input v-model="formItem.name" placeholder="请输入角色名称"></i-input>
         </FormItem>
         <FormItem label="角色编码" prop="role">
-          <Input v-model="formItem.role" placeholder="请输入角色编码"></Input>
+          <i-input v-model="formItem.role" placeholder="请输入角色编码"></i-input>
         </FormItem>
         <FormItem label="角色描述">
-          <Input v-model="formItem.desc" placeholder="请输入角色描述"></Input>
+          <i-input v-model="formItem.desc" placeholder="请输入角色描述"></i-input>
         </FormItem>
       </Form>
     </Modal>
@@ -80,6 +80,7 @@
 <script>
 import OperationsTable from './operations.vue'
 import { getMenu } from '@/api/admin'
+import { modifyNode } from '@/libs/util'
 export default {
   components: {
     OperationsTable
@@ -91,7 +92,13 @@ export default {
       modelEdit: false,
       editIndex: '',
       loading: true,
-      roles: [],
+      roles: [
+        {
+          name: '超级管理员',
+          role: 'super_admin',
+          menu: ['5e67ac22caaa163e6ab8f3d1', '5e67babecaaa163e6ab8f3d5']
+        }
+      ],
       roleIndex: '',
       formItem: {
         name: '',
@@ -171,6 +178,7 @@ export default {
     }
   },
   mounted () {
+    window.vue = this
     this._getMenu()
   },
   methods: {
@@ -187,7 +195,19 @@ export default {
     selectRole (value) {
       if (this.roleIndex === '' || this.roleIndex !== value) {
         this.roleIndex = value
+        // 修改右侧菜单树 + 权限列表的选中状态
+        modifyNode(
+          this.menuData,
+          this.roles[this.roleIndex].menu,
+          'checked',
+          true
+        )
+        if (this.selectNode.length > 0 && this.selectNode[0].operations) {
+          this.tableData = this.selectNode[0].operations
+        }
       } else {
+        modifyNode(this.menuData, null, 'checked', false)
+        this.tableData = []
         this.roleIndex = ''
       }
     },
