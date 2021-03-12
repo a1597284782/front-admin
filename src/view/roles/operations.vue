@@ -58,9 +58,6 @@ export default {
     }
   },
   watch: {
-    localData () {
-      this.$emit('on-change', this.localData)
-    },
     tableData (newval, oldval) {
       localStorage.setItem('localData', JSON.stringify(newval))
       this.localData = newval
@@ -69,6 +66,7 @@ export default {
   methods: {
     handleSelect (selection) {
       this.selection = selection
+      this.$emit('on-change', selection)
       if (!this.isEdit) {
         setTimeout(() => {
           const tmpData = localStorage.getItem('localData')

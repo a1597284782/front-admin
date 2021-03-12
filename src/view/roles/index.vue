@@ -85,7 +85,7 @@
 <script>
 import OperationsTable from './operations.vue'
 import { getMenu } from '@/api/admin'
-import { modifyNode } from '@/libs/util'
+import { modifyNode, getPropertyIds } from '@/libs/util'
 export default {
   components: {
     OperationsTable
@@ -191,6 +191,7 @@ export default {
       getMenu().then((res) => {
         if (res.code === 200) {
           this.menuData = res.data
+          localStorage.setItem('menuData', JSON.stringify(this.menuData))
         }
       })
     },
@@ -243,9 +244,18 @@ export default {
     },
     submit () {
       this.isEdit = false
+      localStorage.setItem('menuData', JSON.stringify(this.menuData))
+      const menus = getPropertyIds(this.menuData, ['children', 'operations'])
+      console.log('submit -> menus', menus)
     },
     cancel () {
       this.isEdit = false
+      const tmpData = localStorage.getItem('menuData')
+      if (typeof tmpData !== 'undefined') {
+        this.menuData = JSON.parse(tmpData)
+        this.tableData = []
+        this.selectNode = []
+      }
     },
     modelSubmit () {
       this.$refs.form.validate((valid) => {
@@ -297,7 +307,18 @@ export default {
       }
     },
     handleTableChange (table) {
-      this.tableData = table
+      // this.selectNode[0].operations =
+      const ids = table.map((o) => o._id)
+      if (this.selectNode.length > 0 && this.selectNode[0].operations) {
+        this.selectNode[0].operations.forEach((item) => {
+          if (!ids.includes(item._id)) {
+            item._checked = false
+          } else {
+            item._checked = true
+          }
+        })
+        console.log('selectNode -> table', this.selectNode[0].operations)
+      }
     }
   }
 }

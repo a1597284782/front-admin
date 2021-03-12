@@ -551,3 +551,30 @@ export const modifyNode = (tree, nodes, property, flag) => {
   }
   return tree
 }
+
+// 数组扁平
+export const flatten = (arr) => {
+  while (arr.some((item) => Array.isArray(item))) {
+    arr = [].concat(...arr)
+  }
+  return arr
+}
+
+// 递归获取属性id数组
+export const getPropertyIds = (menu, properties) => {
+  const arr = []
+  // 遍历整个树形菜单数据
+  menu.forEach((item) => {
+    if (item.checked || item._checked) {
+      arr.push(item._id)
+    }
+    // 查询两个属性下面的节点信息，children -> children -> operations
+    properties.forEach((property) => {
+      if (item[property] && item[property].length > 0) {
+        arr.push(getPropertyIds(item[property], properties))
+      }
+    })
+  })
+  // [1,2,3 [2,3,4,[44,4,4]]]
+  return flatten(arr)
+}
