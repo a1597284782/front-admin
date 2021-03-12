@@ -41,7 +41,12 @@
               <Button size="small" icon="md-trash" @click="cancel()">取消</Button>
             </ButtonGroup>
           </div>
-          <Tree :data="menuData" show-checkbox @on-select-change="handleTreeChange"></Tree>
+          <Tree
+            :data="menuData"
+            show-checkbox
+            @on-select-change="handleTreeChange"
+            @on-check-change="handleTreeChecked"
+          ></Tree>
         </Card>
       </i-col>
       <i-col span="13" :sm="24" :md="16" :lg="13">
@@ -196,12 +201,13 @@ export default {
       if (this.roleIndex === '' || this.roleIndex !== value) {
         this.roleIndex = value
         // 修改右侧菜单树 + 权限列表的选中状态
-        modifyNode(
+        const tmpData = modifyNode(
           this.menuData,
           this.roles[this.roleIndex].menu,
           'checked',
           true
         )
+        localStorage.setItem('menuData', JSON.stringify(tmpData))
         if (this.selectNode.length > 0 && this.selectNode[0].operations) {
           this.tableData = this.selectNode[0].operations
         }
@@ -280,6 +286,15 @@ export default {
       }
       this.selectNode = item
       this.tableData = [...item[0].operations]
+    },
+    handleTreeChecked (item) {
+      if (!this.isEdit) {
+        const tmpData = localStorage.getItem('menuData')
+        if (typeof tmpData !== 'undefined') {
+          this.menuData = JSON.parse(tmpData)
+        }
+        this.$Message.warning('无法修改，请选择权限进行编辑！')
+      }
     },
     handleTableChange (table) {
       this.tableData = table
