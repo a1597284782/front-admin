@@ -7,7 +7,7 @@
           <p slot="title">
             <Icon type="md-contacts"></Icon>角色列表
           </p>
-          <a slot="extra" @click.prevent="addRole()" v-if="!isEdit">
+          <a slot="extra" @click.prevent="addRoleModel()" v-if="!isEdit">
             <Icon type="md-add"></Icon>新增
           </a>
           <ul class="imooc-card">
@@ -26,7 +26,7 @@
                   type="md-trash"
                   size="16"
                   color="#ed4014"
-                  @click.stop="deleteRole(item,index)"
+                  @click.stop="_deleteRole(item,index)"
                 ></Icon>
               </span>
             </li>
@@ -84,7 +84,7 @@
 
 <script>
 import OperationsTable from './operations.vue'
-import { getMenu } from '@/api/admin'
+import { getMenu, getRoles, addRole, updateRole, deleteRole } from '@/api/admin'
 import { modifyNode, getPropertyIds } from '@/libs/util'
 export default {
   components: {
@@ -97,13 +97,7 @@ export default {
       modelEdit: false,
       editIndex: '',
       loading: true,
-      roles: [
-        {
-          name: '超级管理员',
-          role: 'super_admin',
-          menu: ['5e67ac22caaa163e6ab8f3d1', '5e67babecaaa163e6ab8f3d5']
-        }
-      ],
+      roles: [],
       roleIndex: '',
       formItem: {
         name: '',
@@ -185,6 +179,7 @@ export default {
   mounted () {
     window.vue = this
     this._getMenu()
+    this._getRoles()
   },
   methods: {
     _getMenu () {
@@ -195,12 +190,22 @@ export default {
         }
       })
     },
-    addRole () {
+    _getRoles () {
+      getRoles().then((res) => {
+        if (res.code === 200) {
+          this.roles = res.data
+        }
+      })
+    },
+    addRoleModel () {
       this.showAdd = true
     },
     selectRole (value) {
       if (this.roleIndex === '' || this.roleIndex !== value) {
         this.roleIndex = value
+        if (this.roles[this.roleIndex].menu.length === 0) {
+          return
+        }
         // 修改右侧菜单树 + 权限列表的选中状态
         const tmpData = modifyNode(
           this.menuData,
@@ -228,13 +233,17 @@ export default {
       this.showAdd = true
       this.formItem = { ...item }
     },
-    deleteRole (item, index) {
+    _deleteRole (item, index) {
       this.$Modal.confirm({
         title: '确定删除吗？',
         content: `确定删除${item.name}的角色吗？`,
         onOk: () => {
           this.roles.splice(index, 1)
-          this.$Message.success('成功删除！')
+          deleteRole({ _id: item._id }).then((res) => {
+            if (res.code === 200 && res.data.deletedCount === 1) {
+              this.$Message.success('成功删除！')
+            }
+          })
           //  this._getList()
         },
         onCancel: () => {
@@ -246,7 +255,14 @@ export default {
       this.isEdit = false
       localStorage.setItem('menuData', JSON.stringify(this.menuData))
       const menus = getPropertyIds(this.menuData, ['children', 'operations'])
-      console.log('submit -> menus', menus)
+      const tmp = { ...this.roles[this.roleIndex] }
+      tmp.menu = menus
+      this.roles.splice(this.roleIndex, 1, tmp)
+      updateRole(tmp).then((res) => {
+        if (res.code === 200 && res.data.nModified === 1) {
+          this.$Message.success('更新角色权限成功！')
+        }
+      })
     },
     cancel () {
       this.isEdit = false
@@ -263,14 +279,27 @@ export default {
           // 检验通过后的逻辑
           // 1. 获取表单的信息
           if (this.modelEdit) {
+            const roleData = {
+              _id: this.roles[this.editIndex]._id,
+              ...this.formItem
+            }
             // editIndex
-            this.roles.splice(this.editIndex, 1, { ...this.formItem })
+            updateRole(roleData).then((res) => {
+              if (res.code === 200 && res.data.nModified === 1) {
+                this.roles.splice(this.editIndex, 1, roleData)
+              }
+              this.$Message.success('更新成功！')
+            })
           } else {
-            this.roles.push({ ...this.formItem })
+            // 2. 发送创建角色的请求
+            addRole(this.formItem).then((res) => {
+              if (res.code === 200 && res.data.name !== '') {
+                this.roles.push(res.data)
+                this.$Message.success('添加成功！')
+              }
+            })
           }
-          // 2. 发送创建角色的请求
           // 3. 清空表单信息
-          this.$Message.info('添加成功！')
           this.initForm()
         } else {
           this.loading = false
@@ -317,7 +346,6 @@ export default {
             item._checked = true
           }
         })
-        console.log('selectNode -> table', this.selectNode[0].operations)
       }
     }
   }
