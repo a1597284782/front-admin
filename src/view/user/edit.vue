@@ -27,14 +27,15 @@
           />
         </FormItem>
         <FormItem label="角色" prop="roles">
-         <Select v-model="localItem.roles" multiple>
-           <Option
-             v-for="(item,index) in roles"
-             :value="item.role"
-             :key="'roles-' + index"
-           >{{ item.name }}</Option>
-         </Select>
-       </FormItem>
+          <Select v-model="localItem.roles" multiple>
+            <Option
+              v-for="(item, index) in roles"
+              :value="item.role"
+              :key="'roles-' + index"
+              >{{ item.name }}</Option
+            >
+          </Select>
+        </FormItem>
         <FormItem label="是否禁用">
           <RadioGroup v-model="localItem.status">
             <Radio label="0">否</Radio>
@@ -85,7 +86,7 @@ const userNamePassCheck = (rule, value, callback, vm) => {
     callback()
     return
   }
-  checkUsername(value).then(res => {
+  checkUsername(value).then((res) => {
     if (res.code === 200) {
       const data = res.data
       if (data === 1) {
@@ -107,7 +108,7 @@ export default {
     },
     item: {
       type: Object,
-      default: () => { }
+      default: () => {}
     },
     roles: {
       type: Array,
@@ -133,8 +134,18 @@ export default {
       ruleValidate: {
         name: [
           { required: true, message: '请输入用户昵称', trigger: 'blur' },
-          { type: 'string', min: 4, message: '昵称长度至少为4位', trigger: 'change' },
-          { type: 'string', man: 16, message: '昵称长度不能超过16位', trigger: 'change' }
+          {
+            type: 'string',
+            min: 4,
+            message: '昵称长度至少为4位',
+            trigger: 'change'
+          },
+          {
+            type: 'string',
+            man: 16,
+            message: '昵称长度不能超过16位',
+            trigger: 'change'
+          }
         ],
         username: [
           { required: true, message: '请输入登录名', trigger: 'blur' },
@@ -145,11 +156,28 @@ export default {
             trigger: 'blur'
           }
         ],
-        roles: [{ required: true, message: '请选择用户角色', trigger: 'blur' }],
+        roles: [
+          {
+            type: 'array',
+            required: true,
+            message: '请选择用户角色',
+            trigger: 'blur'
+          }
+        ],
         password: [
           { required: true, message: '请输入密码', trigger: 'blur' },
-          { type: 'string', min: 6, message: '密码长度至少为6位', trigger: 'change' },
-          { type: 'string', man: 20, message: '密码长度不能超过20位', trigger: 'change' }
+          {
+            type: 'string',
+            min: 6,
+            message: '密码长度至少为6位',
+            trigger: 'change'
+          },
+          {
+            type: 'string',
+            man: 20,
+            message: '密码长度不能超过20位',
+            trigger: 'change'
+          }
         ],
         favs: [
           // { required: true, message: '请输入用户积分', trigger: 'blur' },
@@ -167,8 +195,7 @@ export default {
       this.showStats = newVal
     }
   },
-  mounted () {
-  },
+  mounted () {},
   methods: {
     ok () {
       this.$refs.table.validate((valid) => {
@@ -178,7 +205,9 @@ export default {
           this.$emit('editEvent', this.localItem)
         } else {
           this.loading = false
-          this.$nextTick(() => { this.loading = true })
+          this.$nextTick(() => {
+            this.loading = true
+          })
           this.$Message.error('请检查输入数据')
         }
       })

@@ -13,8 +13,12 @@ const addErrorLog = errorInfo => {
 
 /* eslint-disable handle-callback-err */
 const errorHandle = err => {
-  console.log('err', err)
-  ViewUI.Message.error('未知错误！')
+  console.log('err =>', err.message)
+  if (/^.*?401/.test(err.message)) {
+    ViewUI.Message.error('没有权限！')
+  } else {
+    ViewUI.Message.error('未知错误！')
+  }
   addErrorLog(err)
 }
 

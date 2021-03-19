@@ -264,6 +264,7 @@ export default {
   },
   mounted () {
     this._getRoleNames()
+    this._getList()
   },
   methods: {
     handleSearch (value) {
