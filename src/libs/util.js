@@ -578,3 +578,15 @@ export const getPropertyIds = (menu, properties) => {
   // [1,2,3 [2,3,4,[44,4,4]]]
   return flatten(arr)
 }
+
+// 菜单排序
+export const sortMenus = (tree) => {
+  tree = sortObj(tree, 'sort')
+  if (tree.children && tree.children.length > 0) {
+    tree.children = sortMenus(tree.children, 'sort')
+  }
+  if (tree.operations && tree.operations.length > 0) {
+    tree.operations = sortMenus(tree.operations, 'sort')
+  }
+  return tree
+}

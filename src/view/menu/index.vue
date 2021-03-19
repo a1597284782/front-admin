@@ -51,7 +51,8 @@ import {
   updateNode,
   insertNode,
   deleteNode,
-  getNode
+  getNode,
+  sortMenus
 } from '@/libs/util'
 import { addMenu, getMenu, updateMenu, deleteMenu } from '@/api/admin'
 export default {
@@ -228,6 +229,7 @@ export default {
             if (res.code === 200) {
               this.menuData.push(res.data)
               this.$Message.success('添加菜单成功！')
+              this.menuData = sortMenus([...this.menuData])
               this.initForm()
             }
           })
@@ -239,6 +241,7 @@ export default {
               if (res.code === 200) {
                 this.menuData = insertNode(this.menuData, selectNode, res.data)
                 this.$Message.success('添加菜单成功！')
+                this.menuData = sortMenus([...this.menuData])
               }
             })
           } else {
@@ -247,6 +250,7 @@ export default {
             updateMenu(parent).then((res) => {
               if (res.code === 200) {
                 this.$Message.success('添加菜单成功！')
+                this.menuData = sortMenus([...this.menuData])
               }
             })
           }
@@ -266,6 +270,7 @@ export default {
         updateMenu(parent).then((res) => {
           if (res.code === 200) {
             this.$Message.success('添加子菜单成功！')
+            this.menuData = sortMenus([...this.menuData])
           }
         })
       } else {
@@ -277,6 +282,7 @@ export default {
         updateMenu(parent).then((res) => {
           if (res.code === 200) {
             this.$Message.success('更新菜单成功！')
+            this.menuData = sortMenus([...this.menuData])
           }
         })
       }
