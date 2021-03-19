@@ -45,16 +45,19 @@
     <EditModel
       :isShow="showEdit"
       :item="currentItem"
+      :roles="roles"
       @editEvent="handleEdit"
       @changeEvent="handleChangeEvent"
     ></EditModel>
     <AddModel
       :isShow="showAdd"
+      :roles="roles"
       @editEvent="handleItemAdd"
       @changeEvent="handleAddChangeEvent"
     ></AddModel>
     <BatchSet
       :isShow="showSet"
+      :roles="roles"
       @editEvent="handleItemSet"
       @changeEvent="handleSetChangeEvent"
     ></BatchSet>
@@ -62,7 +65,14 @@
 </template>
 
 <script>
-import { getUserList, updateUserById, updateUserBatchById, deleteUserById, addUser } from '@/api/admin'
+import {
+  getUserList,
+  updateUserById,
+  updateUserBatchById,
+  deleteUserById,
+  addUser,
+  getRoleNames
+} from '@/api/admin'
 import Tables from '_c/tables'
 import EditModel from './edit'
 import AddModel from './add'
@@ -70,7 +80,7 @@ import BatchSet from './batchSet'
 import dayjs from 'dayjs'
 
 export default {
-  name: 'user_management',
+  name: 'menu_management', // => 等价于notCache
   components: {
     Tables,
     EditModel,
@@ -123,7 +133,10 @@ export default {
           align: 'center',
           minWidth: 160,
           render: (h, params) => {
-            return h('div', [h('span', params.row.roles.join(','))])
+            const roleNames = params.row.roles
+              .map((o) => this.roleNames[o])
+              .join(',')
+            return h('div', [h('span', roleNames)])
           },
           search: {
             type: 'select',
@@ -156,7 +169,9 @@ export default {
           align: 'center',
           minWidth: 100,
           render: (h, params) => {
-            return h('div', [h('span', params.row.status === '0' ? '否' : '是')])
+            return h('div', [
+              h('span', params.row.status === '0' ? '否' : '是')
+            ])
           },
           search: {
             type: 'radio',
@@ -209,7 +224,10 @@ export default {
           minWidth: 160,
           render: (h, params) => {
             return h('div', [
-              h('span', dayjs(params.row.created).format('YYYY-MM-DD HH:mm:ss'))
+              h(
+                'span',
+                dayjs(params.row.created).format('YYYY-MM-DD HH:mm:ss')
+              )
             ])
           },
           search: {
@@ -231,11 +249,21 @@ export default {
       // 批量
       showSet: false,
       selection: [],
-      option: {}
+      option: {},
+      roles: []
+    }
+  },
+  computed: {
+    roleNames () {
+      const tmp = {}
+      this.roles.forEach((item) => {
+        tmp[item.role] = item.name
+      })
+      return tmp
     }
   },
   mounted () {
-    this._getList()
+    this._getRoleNames()
   },
   methods: {
     handleSearch (value) {
@@ -262,7 +290,7 @@ export default {
     },
     // 确定
     handleEdit (item) {
-      updateUserById(item).then(res => {
+      updateUserById(item).then((res) => {
         if (res.code === 200) {
           this.tableData.splice(this.currentIndex, 1, item)
           this.$Message.success(res.msg)
@@ -287,8 +315,11 @@ export default {
         title: '确定删除用户吗？',
         content: `删除"${row.name}"的用户吗？`,
         onOk: () => {
-          deleteUserById(row._id).then(res => {
-            console.log('🚀 ~ file: index.vue ~ line 212 ~ deleteUserById ~ res', res)
+          deleteUserById(row._id).then((res) => {
+            console.log(
+              '🚀 ~ file: index.vue ~ line 212 ~ deleteUserById ~ res',
+              res
+            )
             this.$Message.success('删除成功!')
             this.tableData.splice(index, 1)
           })
@@ -301,7 +332,7 @@ export default {
     // 导出
     exportExcel () {
       this.$refs.tables.exportCsv({
-        filename: `table-${(new Date()).valueOf()}.csv`
+        filename: `table-${new Date().valueOf()}.csv`
       })
     },
     // 获取列表数据
@@ -321,7 +352,7 @@ export default {
     },
     // 添加模态框
     handleItemAdd (item) {
-      addUser(item).then(res => {
+      addUser(item).then((res) => {
         if (res.code === 200) {
           this.tableData.splice(0, 0, res.data)
           this.$Message.success('添加成功!')
@@ -389,9 +420,15 @@ export default {
         this.$Message.success('批量设置成功！')
         //  this._getList()
       })
+    },
+    _getRoleNames () {
+      getRoleNames().then((res) => {
+        if (res.code === 200) {
+          this.roles = res.data
+        }
+      })
     }
   }
-
 }
 </script>
 

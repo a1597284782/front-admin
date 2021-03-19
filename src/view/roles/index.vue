@@ -87,6 +87,7 @@ import OperationsTable from './operations.vue'
 import { getMenu, getRoles, addRole, updateRole, deleteRole } from '@/api/admin'
 import { modifyNode, getPropertyIds } from '@/libs/util'
 export default {
+  name: 'roles_management',
   components: {
     OperationsTable
   },

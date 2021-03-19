@@ -49,6 +49,9 @@ const addRole = (data) => axios.post('/admin/add-role', data)
 // 获取角色
 const getRoles = () => axios.get('/admin/get-roles')
 
+// 获取角色名字
+const getRoleNames = () => axios.get('/admin/get-roles-names')
+
 // 更新角色
 const updateRole = (data) => axios.post('/admin/update-role', data)
 
@@ -69,5 +72,6 @@ export {
   addRole,
   getRoles,
   updateRole,
-  deleteRole
+  deleteRole,
+  getRoleNames
 }

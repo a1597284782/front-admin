@@ -28,6 +28,15 @@
             placeholder="请输入密码"
           />
         </FormItem>
+        <FormItem label="角色" prop="roles">
+         <Select v-model="localItem.roles" multiple>
+           <Option
+             v-for="(item,index) in roles"
+             :value="item.role"
+             :key="'roles-' + index"
+           >{{ item.name }}</Option>
+         </Select>
+       </FormItem>
         <FormItem label="用户昵称" prop="name">
           <Input
             prefix="md-person"
@@ -136,6 +145,10 @@ export default {
     item: {
       type: Object,
       default: () => { }
+    },
+    roles: {
+      type: Array,
+      default: () => []
     }
   },
   data () {
@@ -147,6 +160,7 @@ export default {
         name: '',
         username: '',
         password: '',
+        roles: ['user'],
         status: '0',
         favs: 100,
         isVip: '0',
@@ -171,6 +185,7 @@ export default {
             trigger: 'blur'
           }
         ],
+        roles: [{ required: true, message: '请选择用户角色', trigger: 'blur' }],
         password: [
           { required: true, message: '请输入密码', trigger: 'blur' },
           { type: 'string', min: 6, message: '密码长度至少为6位', trigger: 'change' },
