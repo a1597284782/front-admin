@@ -68,6 +68,7 @@ export default {
       menuData: [],
       formData: {
         title: '',
+        name: '', // 组件名称
         path: '',
         component: '',
         hideInBread: false,
@@ -77,6 +78,7 @@ export default {
         sort: 0,
         redirect: '',
         type: 'menu',
+        link: '',
         operations: []
       },
       columns: [
@@ -222,20 +224,20 @@ export default {
       if (this.type === 'bro') {
         // 兄弟节点
         if (this.menuData.length === 0) {
-          this.menuData.push(data)
-          this.initForm()
           addMenu(data).then((res) => {
             if (res.code === 200) {
-              this.$Message.success('添加菜单成功')
+              this.menuData.push(res.data)
+              this.$Message.success('添加菜单成功！')
+              this.initForm()
             }
           })
         } else {
           const selectNode = this.selectNode[0]
-          this.menuData = insertNode(this.menuData, selectNode, data)
           // 1. 可能是一级节点的兄弟节点  -> addMenu -> menu
           if (parent.nodeKey === selectNode.nodeKey) {
             addMenu(data).then((res) => {
               if (res.code === 200) {
+                this.menuData = insertNode(this.menuData, selectNode, res.data)
                 this.$Message.success('添加菜单成功！')
               }
             })
@@ -283,13 +285,15 @@ export default {
       this.isEdit = false
       this.type = ''
       this.formData = {
-        name: '',
+        title: '',
+        name: '', // 组件名称
         path: '',
         component: '',
         hideInBread: false,
         hideInMenu: false,
         notCache: false,
         icon: '',
+        link: '',
         sort: 0,
         redirect: '',
         type: 'menu',
