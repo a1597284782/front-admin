@@ -55,10 +55,29 @@ export default [
     path: '',
     name: 'doc',
     meta: {
-      title: '文档',
-      href: 'https://lison16.github.io/iview-admin-doc/#/',
-      icon: 'ios-book'
-    }
+      title: '项目文档',
+      icon: 'ios-folder'
+    },
+    children: [
+      {
+        path: '/iview',
+        name: 'iview-admin',
+        meta: {
+          title: 'iview-admin文档',
+          href: 'https://lison16.github.io/iview-admin-doc/#/',
+          icon: 'ios-book'
+        }
+      },
+      {
+        path: '/api',
+        name: 'api-doc',
+        meta: {
+          title: '接口文档',
+          href: 'https://doc.toimc.com/web/#/2?page_id=42',
+          icon: 'ios-cube'
+        }
+      }
+    ]
   },
   {
     path: '/join',
@@ -73,7 +92,7 @@ export default [
         name: 'join_page',
         meta: {
           icon: '_qq',
-          title: 'QQ群'
+          title: '社区信息'
         },
         component: () => import('@/view/join-page.vue')
       }

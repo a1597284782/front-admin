@@ -53,5 +53,7 @@ export default {
   roles: '权限管理',
   user: '用户相关配置',
   'Menu Options': '菜单选项',
-  resources: '资源选项'
+  resources: '资源选项',
+  'iview-admin': 'iview-admin文档',
+  'api-doc': '接口文档'
 }
