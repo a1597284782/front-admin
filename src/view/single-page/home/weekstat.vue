@@ -6,6 +6,9 @@
 import echarts from 'echarts'
 import moment from 'dayjs'
 import { on, off } from '@/libs/tools'
+import tdTheme from '@/components/charts/theme.json'
+echarts.registerTheme('tdTheme', tdTheme)
+
 const labelOptions = {
   show: true,
   position: 'top',
@@ -27,7 +30,8 @@ export default {
     weekData: {
       type: Object,
       default: () => {}
-    }
+    },
+    text: String
   },
   data () {
     return {
@@ -69,17 +73,24 @@ export default {
       })
     })
     const option = {
+      title: {
+        text: this.text,
+        x: 'center'
+      },
       tooltip: {
         trigger: 'axis',
         axisPointer: {
           type: 'cross',
+          crossStyle: {
+            color: '#999'
+          },
           label: {
             backgroundColor: '#6a7985'
           }
         }
       },
       grid: {
-        top: '3%',
+        // top: '3%',
         left: '1.2%',
         right: '1%',
         bottom: '3%',
@@ -89,7 +100,10 @@ export default {
         {
           type: 'category',
           axisTick: { show: false },
-          data: dateArr
+          data: dateArr,
+          axisPointer: {
+            type: 'shadow'
+          }
         }
       ],
       yAxis: [
@@ -100,7 +114,7 @@ export default {
       series: seriesArr
     }
     this.$nextTick(() => {
-      this.dom = echarts.init(this.$refs.dom)
+      this.dom = echarts.init(this.$refs.dom, 'tdTheme')
       this.dom.setOption(option)
       on(window, 'resize', this.resize)
     })
