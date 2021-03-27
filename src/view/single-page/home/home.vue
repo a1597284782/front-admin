@@ -29,13 +29,13 @@
       </i-col>
       <i-col :md="24" :lg="16" style="margin-bottom: 20px;">
         <Card shadow>
-          <chart-bar style="height: 300px;" :value="barData" text="每周用户活跃量" />
+          <chart-bar style="height: 300px;" :value="barData" text="近6月的累计发帖" :key="timer3" />
         </Card>
       </i-col>
     </Row>
     <Row>
       <Card shadow>
-        <example style="height: 310px;" />
+        <week-stat :key="timer4" :weekData="weekData" style="height: 310px;" />
       </Card>
     </Row>
   </div>
@@ -45,8 +45,9 @@
 import InforCard from '_c/info-card'
 import CountTo from '_c/count-to'
 import { ChartPie, ChartBar } from '_c/charts'
-import Example from './example.vue'
+import WeekStat from './weekstat.vue'
 import { getStatData } from '@/api/admin'
+import moment from 'dayjs'
 export default {
   name: 'home',
   components: {
@@ -54,12 +55,14 @@ export default {
     CountTo,
     ChartPie,
     ChartBar,
-    Example
+    WeekStat
   },
   data () {
     return {
       timer1: 0,
       timer2: 0,
+      timer3: 0,
+      timer4: 0,
       inforCardData: [
         {
           title: '新增用户',
@@ -89,15 +92,8 @@ export default {
         { value: 0, name: '讨论' },
         { value: 0, name: '建议' }
       ],
-      barData: {
-        Mon: 13253,
-        Tue: 34235,
-        Wed: 26321,
-        Thu: 12340,
-        Fri: 24643,
-        Sat: 1322,
-        Sun: 1324
-      }
+      barData: {},
+      weekData: {}
     }
   },
   mounted () {
@@ -140,6 +136,22 @@ export default {
             arr.push({ name: '建议', value: pieData.advise || 0 })
             this.pieData = arr
             this.timer2 = new Date().getTime()
+          }
+          if (res.data.monthData) {
+            const result = {}
+            // 补足未有月份
+            for (let i = 0; i <= 5; i++) {
+              const key = moment()
+                .subtract(5 - i, 'M')
+                .format('YYYY-MM')
+              result[key] = res.data.monthData[key] || 0 // key-value
+            }
+            this.barData = result
+            this.timer3 = new Date().getTime()
+          }
+          if (res.data.weekData) {
+            this.weekData = res.data.weekData
+            this.timer4 = new Date().getTime()
           }
         }
         // 2. 左侧饼图数据
