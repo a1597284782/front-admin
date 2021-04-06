@@ -10,8 +10,7 @@
       ></Table>
       <Row type="flex" justify="space-between" align="middle">
         <i-col class="ctrls">
-          <Button @click="deleteErrors()">批量删除</Button>
-          <Button @click="handleSetBatch()">批量设置</Button>
+          <Button @click="_deleteErrors()">批量删除</Button>
         </i-col>
         <i-col>
           <Page
@@ -33,6 +32,8 @@
 
 <script>
 import { deleteErrors, getErrorList } from '@/api/admin'
+import Expand from './expand.vue'
+import More from './more.vue'
 import dayjs from 'dayjs'
 export default {
   data () {
@@ -41,7 +42,14 @@ export default {
         {
           type: 'expand',
           key: 'stack',
-          width: 50
+          width: 50,
+          render: (h, params) => {
+            return h(Expand, {
+              props: {
+                row: params.row
+              }
+            })
+          }
         },
         {
           type: 'selection',
@@ -75,7 +83,14 @@ export default {
         {
           title: '请求参数',
           key: 'param',
-          minWidth: 200
+          minWidth: 240,
+          render: (h, params) => {
+            return h(More, {
+              props: {
+                row: params.row
+              }
+            })
+          }
         },
         {
           title: '日期',
@@ -84,10 +99,7 @@ export default {
           minWidth: 180,
           render: (h, params) => {
             return h('div', [
-              h(
-                'span',
-                dayjs(params.row.created).format('YYYY-MM-DD hh:mm:ss')
-              )
+              h('span', dayjs(params.row.created).format('YYYY-MM-DD hh:mm:ss'))
             ])
           }
         },
@@ -126,12 +138,15 @@ export default {
           content: '确定要删除已选中的错误消息吗？',
           onOk: () => {
             const arr = selection.reduce((obj, item) => {
-              obj.ids = []
-              return obj.ids.push(item._id)
-            }, {})
-            console.log('deleteError -> arr', arr)
-            deleteErrors(arr).then((res) => {
-              if (res.data.code === 200) {
+              return [...obj, item._id]
+            }, [])
+            deleteErrors({ ids: arr }).then((res) => {
+              if (res.code === 200) {
+                this.data = this.data.filter((item) => {
+                  if (!arr.includes(item._id)) {
+                    return item
+                  }
+                })
                 this.$Message.success('删除成功！')
               } else {
                 this.$Message.error('删除失败，请联系管理员！')
