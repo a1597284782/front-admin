@@ -52,5 +52,7 @@ export default {
   menu: 'Menu Setting',
   roles: 'Roles',
   'Menu Options': 'Menu Options',
-  resources: 'Resources'
+  resources: 'Resources',
+  logs_check: 'Logs',
+  system: 'System Management'
 }
