@@ -37,6 +37,7 @@ import More from './more.vue'
 import dayjs from 'dayjs'
 export default {
   data () {
+    const that = this
     return {
       columns: [
         {
@@ -66,13 +67,19 @@ export default {
           title: '错误码',
           key: 'code',
           align: 'center',
-          minWidth: 80
+          minWidth: 120,
+          filters: [],
+          filterMultiple: false,
+          filterRemote: that.filterHandle
         },
         {
           title: '请求类型',
           key: 'method',
           align: 'center',
-          minWidth: 100
+          minWidth: 140,
+          filters: [],
+          filterMultiple: false,
+          filterRemote: that.filterHandle
         },
         {
           title: '请求路径',
@@ -111,13 +118,7 @@ export default {
         }
       ],
       data: [],
-      globalFilters: {
-        // 全局过滤条件：多条件筛选、分页
-        message: undefined,
-        code: undefined,
-        method: undefined,
-        page: { num: 1, limit: 10 } // 分页
-      },
+      filters: {},
       page: 1,
       limit: 10,
       total: 0,
@@ -128,6 +129,12 @@ export default {
   },
   mounted () {
     this._getErrorList()
+  },
+  watch: {
+    filters (newval, oldval) {
+      console.log('filters -> newval', newval)
+      this._getErrorList()
+    }
   },
   methods: {
     _deleteErrors () {
@@ -161,15 +168,32 @@ export default {
         })
       }
     },
+    filterHandle (value, row) {
+      const obj = { ...this.filters }
+      if (value[0]) {
+        obj[row] = value[0]
+      } else {
+        delete obj[row]
+      }
+      this.filters = obj
+    },
     _getErrorList () {
       getErrorList({
         page: this.page,
         limit: this.limit,
-        fitler: this.globalFilters || {}
+        filter: this.filters || {}
       }).then((res) => {
         this.data = res.data
         this.total = res.total
         this.loading = false
+        const keys = Object.keys(res.filters)
+        this.columns.map((item) => {
+          if (keys.includes(item.key)) {
+            if (item.filters.length === 0) {
+              item.filters = res.filters[item.key]
+            }
+          }
+        })
       })
     },
     onPageChange (num) {
