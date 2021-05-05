@@ -68,6 +68,16 @@ const getErrorList = params =>
 // 删除错误信息
 const deleteErrors = data => axios.post('/admin/delete-error', data)
 
+// 获取评论
+const getCommentsList = params =>
+  axios.get('/admin/get-comments?' + qs.stringify(params))
+
+// 批量更新评论
+const updateComments = data => axios.post('/admin/update-comments-batch', data)
+
+// 删除评论
+const deleteComments = data => axios.post('/admin/delete-comments', data)
+
 export {
   getUserList,
   updateUserById,
@@ -86,5 +96,8 @@ export {
   getRoleNames,
   getStatData,
   getErrorList,
-  deleteErrors
+  deleteErrors,
+  getCommentsList,
+  updateComments,
+  deleteComments
 }

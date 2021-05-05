@@ -10,20 +10,20 @@ export default [
   // 1.文章管理 => 文章内容管理， 文章标签管理（热门、精华等）
   {
     path: '/content',
-    name: 'article_management',
+    name: 'content_management',
     meta: {
       icon: 'md-albums',
-      title: '文章管理',
+      title: '内容管理',
       notCache: true
     },
     component: Main,
     children: [
       {
         path: 'index',
-        name: 'content_management',
+        name: 'article_management',
         meta: {
           icon: 'ios-paper',
-          title: '内容管理',
+          title: '文章管理',
           notCache: true
         },
         component: () => import('@/view/content')
@@ -37,6 +37,28 @@ export default [
           notCache: true
         },
         component: () => import('@/view/content/tags.vue')
+      }
+    ]
+  },
+  {
+    path: '/comments',
+    name: 'comments_management',
+    meta: {
+      icon: 'ios-umbrella',
+      title: '内容安全',
+      notCache: true
+    },
+    component: Main,
+    children: [
+      {
+        path: 'index',
+        name: 'comments_list',
+        meta: {
+          icon: 'ios-chatbubbles',
+          title: '评论管理',
+          notCache: true
+        },
+        component: () => import('@/view/comments/index.vue')
       }
     ]
   },
