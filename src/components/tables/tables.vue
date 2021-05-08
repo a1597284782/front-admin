@@ -54,17 +54,19 @@
       <slot name="header" slot="header"></slot>
       <slot name="footer" slot="footer"></slot>
       <slot name="loading" slot="loading"></slot>
-      <template slot-scope="{ row, index }" slot="action">
+      <template slot-scope="{ row, index, column }" slot="action">
         <Icon
           type="md-build"
           size="22"
           style="margin-right: 5px"
           @click.stop="editRow(row, index)"
+          v-if="!column.options || column.options.includes('edit')"
         ></Icon>
         <Icon
           type="md-trash"
           size="22"
           @click.stop="removeRow(row, index)"
+          v-if="!column.options || column.options.includes('delete')"
         ></Icon>
       </template>
     </Table>

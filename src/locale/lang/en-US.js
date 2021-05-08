@@ -48,9 +48,13 @@ export default {
   tags_management: 'Tags Managemen',
   user_management: 'User Management',
   menu_management: 'Menu Management',
+  comments_management: 'Comments Management',
   roles_management: 'Roles Management',
   menu: 'Menu Setting',
   roles: 'Roles',
   'Menu Options': 'Menu Options',
-  resources: 'Resources'
+  resources: 'Resources',
+  logs_check: 'Logs',
+  system: 'System Management',
+  comments_list: 'Comments List'
 }

@@ -47,6 +47,7 @@ export default {
   content_management: '内容管理',
   tags_management: '标签管理',
   user_management: '用户管理',
+  comments_management: '内容安全',
   menu_management: '菜单管理',
   roles_management: '角色权限',
   menu: '系统菜单配置',
@@ -55,5 +56,8 @@ export default {
   'Menu Options': '菜单选项',
   resources: '资源选项',
   'iview-admin': 'iview-admin文档',
-  'api-doc': '接口文档'
+  'api-doc': '接口文档',
+  logs_check: '错误日志',
+  system: '系统管理',
+  comments_list: '评论管理'
 }

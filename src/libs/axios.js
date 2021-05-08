@@ -74,12 +74,10 @@ class HttpRequest {
         // 对响应数据做点什么
         const key = res.config.url + '&' + res.config.method
         this.removePending(key)
-        if (res.status === 200) {
-          if (res.data.code !== 200) {
-            ViewUI.Message.error(res.data.msg || '未知错误！')
-          }
+        if (res.status === 200 && res.data.code === 200) {
           return Promise.resolve(res.data)
         } else {
+          ViewUI.Message.error(res.data.msg || '未知错误！')
           return Promise.reject(res)
         }
       },

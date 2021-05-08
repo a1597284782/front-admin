@@ -79,16 +79,15 @@ export default {
         login({
           ...loginInfo
         }).then(res => {
-          if (res.code !== 200) {
-            return resolve(res)
+          if (res.code === 200) {
+            const data = res.data
+            commit('setToken', res.token)
+            commit('setAvatar', data.pic)
+            commit('setUserName', data.name)
+            commit('setUserId', data._id)
+            commit('setAccess', data.roles)
+            commit('setHasGetInfo', true)
           }
-          const data = res.data
-          commit('setToken', res.token)
-          commit('setAvatar', data.pic)
-          commit('setUserName', data.name)
-          commit('setUserId', data._id)
-          commit('setAccess', data.roles)
-          commit('setHasGetInfo', true)
           resolve(res)
         }).catch(err => {
           reject(err)
