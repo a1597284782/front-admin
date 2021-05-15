@@ -1,90 +1,51 @@
-<p align="center">
-    <a href="https://www.iviewui.com">
-        <img width="200" src="https://file.iviewui.com/logo-new.svg">
-    </a>
-</p>
+## 社区后台管理系统
 
-<h1>
-iView Admin
-    <h3>Vue.js 2.0 admin management system template based on iView.</h3>
-</h1>
+### 项目简介
 
-[![](https://img.shields.io/github/release/iview/iview-admin.svg)](https://github.com/iview/iview-admin/releases)
-[![](https://img.shields.io/travis/iview/iview-admin.svg?style=flat-square)](https://travis-ci.org/iview/iview-admin)
-[![vue](https://img.shields.io/badge/vue-2.5.17-brightgreen.svg?style=flat-square)](https://github.com/vuejs/vue)
-[![iview ui](https://img.shields.io/badge/iview-3.2.2-brightgreen.svg?style=flat-square)](https://github.com/iview/iview)
-[![npm](https://img.shields.io/npm/l/express.svg)]()
+本项目是社区项目的后台管理系统，使用 Vue + Vue Router + Vuex + iView UI 开发多角色、多级菜单的管理系统。该项目用于管理社区项目文章的增删改查、用户权限、禁言、采纳、错误日志收集、数据可视化等。
 
-## Introduction
+### 项目运行
 
-iView Admin is a front-end management background integration solution. It based on [Vue.js](https://github.com/vuejs/vue) and use the UI Toolkit [iView](https://github.com/iview/iview).
+安装依赖
 
-- [Document](https://lison16.github.io/iview-admin-doc/)
-- [Preview](https://admin.iviewui.com/)
-- [Base template recommends using](https://github.com/iview/iview-admin/tree/template)
-
-![image](https://file.iviewui.com/admin-dist/admin-preview.png)
-
-## Features
-
-- Login / Logout
-- Permission Authentication
-    - A list of filters
-    - Permission to switch
-- i18n
-- Components
-    - Rich Text Editor
-    - Markdown Editor
-    - City Cascader
-    - Photos preview and edit
-    - Draggable list
-    - File upload
-    - Digital gradient
-    - split-pane
-- Form
-    - The article published
-    - Workflow
-- Table
-    - Drag-and-drop sort
-    - Searchable form
-    - Table export data
-        - Export to Csv file
-        - Export to Xls file
-    - Table to picture
-- Error Page
-    - 403
-    - 404
-    - 500
-- Router
-    - Dynamic routing
-    - With reference page
-- Theme
-- Shrink the sidebar
-- Tag navigation
-- Breadcrumb navigation
-- Full screen / exit full screen
-- Lock screen
-- The message center
-- Personal center
-
-## Getting started
-```bush
-# clone the project
-git clone https://github.com/iview/iview-admin.git
-
-// install dependencies
+```
 npm install
+```
 
-// develop
+开发环境运行
+
+```
 npm run dev
 ```
 
-## Build
-```bush
-npm run build
-```
+线上预览地址： http://1.116.90.169:8080/#/
 
-## License
-[MIT](http://opensource.org/licenses/MIT)
+### 项目核心
 
-Copyright (c) 2016-present, TalkingData
+* 缓存&存储方案js-cookie
+* 用户管理/权限分配功能
+* 通用业务组件封装方案
+* 多级内容分类CMS系统设计
+* 角色管理/接口管理/菜单管理
+* 内容管理/评论管理/标签管理
+* 访问日志功能
+* 多模块状态管理
+* 首页可视化统计功能
+* 菜单权限/角色权限/接口权限
+* 自定义多级菜单树型控件
+* 嵌套数据/递归查询
+* Vue动态菜单方案
+* iView-admin路由权限
+* 多种错误日志收集方案
+* 错误日志管理多重异步筛选
+* koa中间件统一报错处理
+* Log4j/koa-logger文件日志方案
+* 多语言i18n
+* 编写 Dockerfile 文件，并配置 Jenkins 实现自动化部署 CI/CD
+
+### 其他
+
+本项目的前台社区PC地址：https://github.com/a1597284782/front
+
+
+
